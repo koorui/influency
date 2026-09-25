@@ -1,0 +1,17 @@
+# Search运行契约
+
+上游传入：project_id、outcome_id、project_name、project_start_date、review_cutoff、cutoff_basis、材料及原子claims。检索阶段不修改这些身份和日期；发现冲突时返回待补充。
+
+本次五个模块的模块ID固定为sota、prior_work、usage_media、github、indicator。允许completed、partial、blocked状态，不以生成了文件就认定检索完成。
+
+sources记录真实读取的URL、来源、公开/事件日期、原文摘录、对应声明ID、支持/限制范围、访问状态。查询日志queries记录实际执行的查询而非计划。服务器另归档来源并记录HTTP结果；其事实正确性仍需复核。
+
+判断checks按模块逐声明列出conclusion、status、evidence_ids、协议可比性与置信度等。execution_percent只有可复算的输入口径成立时才可非空；否则为null，禁止用主观置信度冒充指标完成率。
+
+置信度是证据支持把握，不是统计概率。对象、独立性、协议、时间置信度分别保存。未知内容为null/unknown；不得用同一个总分替代。
+
+日期检查：source.first_public_date与source.event_date任何一个晚于该次review_cutoff均排除；日期未知则不计正式支持。原规范中的“当前SOTA”在报告中必须表达为“截至对应评审基准日”。
+
+历史Search回放接口仍保留，但应与live Search执行元信息严格区分；live未成功时不能静默回退。原规范关于不需要SHA校验的意思是检索任务不应以无关技术工作代替研究，平台既有最小文件完整性校验继续用于数据交接。
+
+research_records承载原规范专门表格中的结构化记录。表名与列名见schemas/required-tables.json；每条记录附source_ids或原项目claim_ids、原文记录/解释/待核类型及限制。未知单元格为null，不用空表代替已读取的相关事实。导出时保留记录，同时再次按来源时点标明是否仍待核；记录存在不代表关系已经证实。没有充分结构化依据的表格保留字段和明确缺项状态，不填造比较数值、团队身份或部署关系。

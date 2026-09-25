@@ -1,0 +1,28 @@
+{
+  "status": "local_acceptance_passed",
+  "pipeline_id": "35d14b2e-e919-4aa9-ba6e-4222d7824a9d",
+  "result_id": "bfb3dfb1-3872-4272-9df7-7fb34577851f",
+  "model": "gpt-6-astra",
+  "reasoning_effort": "medium",
+  "checks": {
+    "six_stage_outputs_verified": true,
+    "current_registration_rules_match": true,
+    "original_archive_verified": true,
+    "large_upload_verified": true,
+    "real_report_browser_verified": true,
+    "skill_archive_hashes_match": true,
+    "skill_archives_have_no_credentials": true,
+    "registered_success_and_unpublished": true,
+    "database_migrated": true,
+    "api_healthy": true,
+    "frontend_available": true
+  },
+  "tests": {
+    "sqlite": 63,
+    "mysql_isolated": 63,
+    "browser_scenarios": 7,
+    "browser_note": "6 passed in full run; one stale text assertion updated and the affected scenario rerun successfully; dedicated submission and live-report scripts also passed"
+  },
+  "scientific_review": "Two independent model reports remain drafts; v19 overall pending and incomplete temporal/external evidence are retained as scientific gaps.",
+  "external_release": "No Feishu message or Duanyan deployment performed; integration requirements prepared locally."
+}

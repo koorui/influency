@@ -1,0 +1,23 @@
+{
+  "source_files_verified": 25,
+  "model_requests": 0,
+  "P01": {
+    "input_ready": false,
+    "logical_calls": 0,
+    "missing_local_sources": 4
+  },
+  "P02": {
+    "input_ready": true,
+    "logical_calls": 41,
+    "missing_local_sources": 5
+  },
+  "P06": {
+    "input_ready": false,
+    "logical_calls": 0,
+    "missing_local_sources": 4
+  },
+  "offline_pipeline": "35 dimensions + 5 outcome syntheses + 1 project synthesis; pending grades only",
+  "historical_missing_grades_rejected": true,
+  "stdlib_only_inspection": true,
+  "report_overwrite_protected": true
+}

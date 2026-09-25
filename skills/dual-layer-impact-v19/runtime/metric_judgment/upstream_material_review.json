@@ -1,0 +1,901 @@
+{
+  "P02": {
+    "03_成果使用评价与媒体报道/summary_table.csv": {
+      "U01": {
+        "row": {
+          "ID": "U01",
+          "成果": "NMRexp",
+          "日期": "2026-04-10",
+          "来源/使用者": "剑桥大学化学系、AstraZeneca；CSP5 ChemRxiv v1",
+          "证据等级": "U2-外部训练",
+          "使用或评价内容": "用约1.2M未指认13C及1.4M未指认1H谱弱监督训练；当前v1报告held-out NMRexp MAE 13C 1.46->1.05 ppm、1H 0.316->0.134 ppm，Exp22K 13C 0.812->0.610，hard-decoy Top-1 13C 0.819->0.876、1H 0.589->0.801。",
+          "是否对应项目成果": "是，精确数据集",
+          "对应置信度": "0.99",
+          "主体关系": "外部团队，无项目作者重合",
+          "主体关系置信度": "0.99",
+          "最终判断": "确认第三方实际训练使用并获正向效果；仍为预印本，非生产部署",
+          "判断置信度": "0.98",
+          "本地证据": "evidence/nmr/CSP5_Crossref.json; evidence/nmr/Cambridge_CSP5_publication.html",
+          "原始URL": "https://doi.org/10.26434/chemrxiv.15001823/v1",
+          "防误用": "不得混用2026-03会议摘要的较优旧数值；版本/划分已变化。"
+        },
+        "outcome_ids": [
+          "MAIN-003"
+        ],
+        "branch_ids": [
+          "D3.2",
+          "D4.3",
+          "D5.2",
+          "D5.3"
+        ]
+      },
+      "U02": {
+        "row": {
+          "ID": "U02",
+          "成果": "NMRexp",
+          "日期": "2026-03-27",
+          "来源/使用者": "RSC NMR Discussion Group Structure 2026；CSP5作者",
+          "证据等级": "U2-外部训练早期版本",
+          "使用或评价内容": "会议摘要题名写1.3M，正文写1.2M 13C+1.4M 1H；报告MAE 13C 1.2375->0.7039、1H 0.2835->0.0933等早期数值。",
+          "是否对应项目成果": "是，精确数据集",
+          "对应置信度": "0.99",
+          "主体关系": "外部团队",
+          "主体关系置信度": "0.99",
+          "最终判断": "确认真实使用；属于CSP5较早版本，数值不应替代后续v1",
+          "判断置信度": "0.97",
+          "本地证据": "evidence/nmr/ASV2026_program.pdf; evidence/nmr/ASV2026_NMRexp_usage_page.png",
+          "原始URL": "https://nmrdg.org.uk/wp/wp-content/uploads/2026/03/ASV2026-program-final.pdf",
+          "防误用": "会议版本和预印本版本必须分列。"
+        },
+        "outcome_ids": [
+          "MAIN-003"
+        ],
+        "branch_ids": [
+          "D3.2",
+          "D4.3",
+          "D5.2",
+          "D5.3"
+        ]
+      },
+      "U03": {
+        "row": {
+          "ID": "U03",
+          "成果": "NMRexp",
+          "日期": "2026",
+          "来源/使用者": "中科大、苏州实验室、百度；DiffNMR",
+          "证据等级": "U2-外部benchmark",
+          "使用或评价内容": "将NMRexp作为真实世界OOD测试集；<=15/20/25重原子Top-1：DiffNMR 18.07/12.61/10.69%，LL-NMR 7.94/6.30/5.55%；作者同时指出两者均明显下降。",
+          "是否对应项目成果": "是，精确数据集",
+          "对应置信度": "0.99",
+          "主体关系": "外部团队",
+          "主体关系置信度": "0.98",
+          "最终判断": "确认第三方实际评测；评价为DiffNMR泛化更好但NMRexp任务困难",
+          "判断置信度": "0.98",
+          "本地证据": "evidence/media/materials_futures_nmrexp_eval.pdf; screenshots/diffnmr_nmrexp_table-05.png",
+          "原始URL": "https://doi.org/10.1088/2752-5724/ae301f",
+          "防误用": "这是数据集使用，不是NMRexp标注正确率验证或生产部署。"
+        },
+        "outcome_ids": [
+          "MAIN-003"
+        ],
+        "branch_ids": [
+          "D1.3",
+          "D3.2",
+          "D4.3"
+        ]
+      },
+      "U04": {
+        "row": {
+          "ID": "U04",
+          "成果": "NMRexp",
+          "日期": "2026",
+          "来源/使用者": "EPFL AI Team Hugging Face镜像",
+          "证据等级": "U1-外部再分发",
+          "使用或评价内容": "将NMRexp转换为Parquet并公开，页面约2.85M行。",
+          "是否对应项目成果": "是，精确数据集",
+          "对应置信度": "0.98",
+          "主体关系": "外部机构",
+          "主体关系置信度": "0.99",
+          "最终判断": "确认第三方再分发/数据工程使用；未证明训练、科研结论或部署",
+          "判断置信度": "0.93",
+          "本地证据": "evidence/nmr/WEB_CAPTURES.md; evidence/nmr/SOURCES.csv",
+          "原始URL": "https://huggingface.co/datasets/structure-epflai/nmrexp",
+          "防误用": "下载量和行数不是独立用户或效果指标。"
+        },
+        "outcome_ids": [
+          "MAIN-003"
+        ],
+        "branch_ids": [
+          "D4.1",
+          "D4.3"
+        ]
+      },
+      "U05": {
+        "row": {
+          "ID": "U05",
+          "成果": "NMRexp",
+          "日期": "2026-02-10",
+          "来源/使用者": "上海人工智能实验室、南京大学等；NMRTrans",
+          "证据等级": "E-外部比较",
+          "使用或评价内容": "比较NMRSpec与NMRexp：后者3,372,987条、1,568,289个唯一分子、内部唯一率46.5%，共享58,796分子、Jaccard 3.36%；评价规模/长尾强但冗余且无谱图图像。",
+          "是否对应项目成果": "是，精确数据集",
+          "对应置信度": "0.99",
+          "主体关系": "外部团队",
+          "主体关系置信度": "0.99",
+          "最终判断": "确认独立质量与覆盖比较；不是用NMRexp训练",
+          "判断置信度": "0.98",
+          "本地证据": "evidence/nmr/NMRTrans_arXiv_2602.10158.pdf; evidence/nmr/NMRTrans_arXiv_2602.10158.txt",
+          "原始URL": "https://arxiv.org/abs/2602.10158",
+          "防误用": "比较数据库不等于使用其训练。"
+        },
+        "outcome_ids": [
+          "MAIN-003"
+        ],
+        "branch_ids": [
+          "D1.2",
+          "D3.2",
+          "D7.1"
+        ]
+      },
+      "U06": {
+        "row": {
+          "ID": "U06",
+          "成果": "NMR-Solver",
+          "日期": "2026-02-10",
+          "来源/使用者": "上海人工智能实验室、南京大学等；NMRTrans",
+          "证据等级": "U2-外部benchmark",
+          "使用或评价内容": "在NMRSpec实验谱运行search-only三阶段流程；Top-1/5/10序列准确率22.35/23.81/23.83%，NMRTrans为42.81/58.22/61.15%。",
+          "是否对应项目成果": "是；仅搜索模块",
+          "对应置信度": "0.99",
+          "主体关系": "外部团队",
+          "主体关系置信度": "0.99",
+          "最终判断": "确认独立运行；在该协议下落后NMRTrans",
+          "判断置信度": "0.98",
+          "本地证据": "evidence/nmr/NMRTrans_arXiv_2602.10158.pdf; evidence/nmr/NMRTrans_NMRexp_comparison_page.png",
+          "原始URL": "https://arxiv.org/abs/2602.10158",
+          "防误用": "未启用fragment optimization，不能与原论文完整流程52.89%直接相减。"
+        },
+        "outcome_ids": [
+          "MAIN-003"
+        ],
+        "branch_ids": [
+          "D1.2",
+          "D1.3",
+          "D3.2",
+          "D4.2",
+          "D4.3"
+        ]
+      },
+      "U07": {
+        "row": {
+          "ID": "U07",
+          "成果": "NMR-Solver",
+          "日期": "2026-01-22",
+          "来源/使用者": "港科大（广州）、同济、西工大、上海AI Lab；NMRGym",
+          "证据等级": "U2-外部benchmark",
+          "使用或评价内容": "269,999实验分子、scaffold split；search-only无分子式Top-1/5/10=6.27/13.96/17.37%，加分子式17.92/33.97/36.48%；6,329样本完整流程Top-1=22.88%，高于NMRMind 15.66%，约8分钟/样本。",
+          "是否对应项目成果": "是；模式和数据集均明确",
+          "对应置信度": "0.99",
+          "主体关系": "外部团队",
+          "主体关系置信度": "0.99",
+          "最终判断": "最强独立评测；显示公式/优化贡献，也显示跨数据域性能下降和高计算成本",
+          "判断置信度": "0.99",
+          "本地证据": "evidence/nmr/NMRGym_arXiv_2601.15763.pdf; evidence/nmr/NMRGym_search_only_table_p5.png; evidence/nmr/NMRGym_full_pipeline_subset_p13.png",
+          "原始URL": "https://arxiv.org/abs/2601.15763",
+          "防误用": "不同数据、划分、先验和模式，不构成原论文同设置复现失败。"
+        },
+        "outcome_ids": [
+          "MAIN-003"
+        ],
+        "branch_ids": [
+          "D1.2",
+          "D1.3",
+          "D2.3",
+          "D3.2",
+          "D4.2",
+          "D4.3"
+        ]
+      },
+      "U08": {
+        "row": {
+          "ID": "U08",
+          "成果": "NMR-Solver",
+          "日期": "2026-05-18至06-05",
+          "来源/使用者": "Christoph Steinbeck团队，耶拿大学；GitHub issue #3",
+          "证据等级": "U1-外部部署尝试",
+          "使用或评价内容": "在2x Tesla V100/CUDA 12.4/Ubuntu 26.04安装时发现公开unimol_tools缺所需API；维护者确认并发布fork v1.0.1；无最终成功确认。",
+          "是否对应项目成果": "是，精确代码库",
+          "对应置信度": "0.99",
+          "主体关系": "已核身份的外部团队",
+          "主体关系置信度": "0.99",
+          "最终判断": "真实外部安装尝试与负面可复现性反馈；修复后成功状态未知",
+          "判断置信度": "0.99",
+          "本地证据": "evidence/nmr/github_NMR-Solver_issues.json; evidence/nmr/github_NMR-Solver_issue3_comments.json; screenshots/nmrsolver_external_issue3_steinbeck.png",
+          "原始URL": "https://github.com/YongqiJin/NMR-Solver/issues/3",
+          "防误用": "安装尝试和维护者修复不等于生产部署成功。"
+        },
+        "outcome_ids": [
+          "MAIN-003"
+        ],
+        "branch_ids": [
+          "D4.2"
+        ]
+      },
+      "U09": {
+        "row": {
+          "ID": "U09",
+          "成果": "NMR-Solver",
+          "日期": "2025-09至2026-07",
+          "来源/使用者": "GitHub nes0zx、y1342474280等",
+          "证据等级": "U1-疑似外部部署尝试",
+          "使用或评价内容": "用户称正在Docker本地部署，并报告镜像403、FAISS版本和Python/SciPy冲突；部分问题仍未关闭。",
+          "是否对应项目成果": "是，精确代码库",
+          "对应置信度": "0.98",
+          "主体关系": "账号author_association=NONE，单位多未知；疑似外部",
+          "主体关系置信度": "0.80",
+          "最终判断": "多次真实部署意图/过程，成功状态未知，存在环境成熟度风险",
+          "判断置信度": "0.90",
+          "本地证据": "evidence/nmr/github_NMR-Solver_issues.json; screenshots/nmrsolver_external_issue2_docker.png",
+          "原始URL": "https://github.com/YongqiJin/NMR-Solver/issues",
+          "防误用": "不能把匿名issue数量当成功用户数。"
+        },
+        "outcome_ids": [
+          "MAIN-003"
+        ],
+        "branch_ids": [
+          "D4.2"
+        ]
+      },
+      "U10": {
+        "row": {
+          "ID": "U10",
+          "成果": "NMR-Solver",
+          "日期": "2025-09",
+          "来源/使用者": "Bohrium NMR toolbox / 深势科技",
+          "证据等级": "I-内部部署",
+          "使用或评价内容": "团队将Web应用上线玻尔平台，媒体复述发布。",
+          "是否对应项目成果": "是，精确系统",
+          "对应置信度": "0.99",
+          "主体关系": "项目参与方深势科技内部平台",
+          "主体关系置信度": "0.99",
+          "最终判断": "确认成果方自建服务；无独立用户数、盲测或用户评价",
+          "判断置信度": "0.97",
+          "本地证据": "evidence/nmr/ByDrug_NMR-Solver_media.html; evidence/nmr/WeChat_DPTech_NMR-Solver.html",
+          "原始URL": "https://www.bohrium.com/apps/nmr-toolbox",
+          "防误用": "服务可访问不等于校外用户实际采用。"
+        },
+        "outcome_ids": [
+          "MAIN-003"
+        ],
+        "branch_ids": [
+          "D5.1"
+        ]
+      },
+      "U11": {
+        "row": {
+          "ID": "U11",
+          "成果": "SpecXMaster",
+          "日期": "2026-05-21",
+          "来源/使用者": "北京大学大型仪器共享平台、深势科技、AISI",
+          "证据等级": "I-关联部署",
+          "使用或评价内容": "北大面向校内师生上线平台，自报FID到结构<2 min并联动NMRexp。",
+          "是否对应项目成果": "是SpecXMaster；不是SpecLabOS",
+          "对应置信度": "0.99",
+          "主体关系": "项目负责人/合作研发方关联；终端用户未知",
+          "主体关系置信度": "0.95",
+          "最终判断": "真实机构部署，但无具名用户、使用量或独立效果反馈",
+          "判断置信度": "0.96",
+          "本地证据": "evidence/nmr/PKU_SpecXMaster_deployment.html; screenshots/pku_specxmaster_launch.png",
+          "原始URL": "https://news.pku.edu.cn/xwzh/ed3119014b5e4e7db82e2f597007cd6b.htm",
+          "防误用": "禁止改写为SpecLabOS部署；校内开放不等于有人使用。"
+        },
+        "outcome_ids": [
+          "MAIN-003"
+        ],
+        "branch_ids": [
+          "D5.1"
+        ]
+      },
+      "U12": {
+        "row": {
+          "ID": "U12",
+          "成果": "SpecXMaster",
+          "日期": "2026-03",
+          "来源/使用者": "DP Technology等技术报告",
+          "证据等级": "I-内部benchmark",
+          "使用或评价内容": "作者内部联合命中率hit@1/3/5=0.783/0.895/0.912；1H与13C子任务另有较低结果。",
+          "是否对应项目成果": "是SpecXMaster",
+          "对应置信度": "0.99",
+          "主体关系": "成果作者/项目关联方",
+          "主体关系置信度": "0.99",
+          "最终判断": "内部测评，可作为系统自报水平；不是第三方复测",
+          "判断置信度": "0.98",
+          "本地证据": "evidence/media/SpecXMaster_arXiv_2603.23101.pdf; screenshots/specxmaster_internal_benchmark-13.png",
+          "原始URL": "https://arxiv.org/abs/2603.23101",
+          "防误用": "不得与BAAI现场Top-1 65.3在未明协议下直接合并。"
+        },
+        "outcome_ids": [
+          "MAIN-003"
+        ],
+        "branch_ids": [
+          "D1.2"
+        ]
+      },
+      "U13": {
+        "row": {
+          "ID": "U13",
+          "成果": "SpecXMaster",
+          "日期": "2026-03-30",
+          "来源/使用者": "北京市软件行业协会",
+          "证据等级": "M-外站转发内部稿",
+          "使用或评价内容": "来源栏明确深势科技，复述<2 min及NMRexp Top-1>70%。",
+          "是否对应项目成果": "是SpecXMaster/NMRexp",
+          "对应置信度": "0.99",
+          "主体关系": "外部协会承载，素材和指标来自项目参与方",
+          "主体关系置信度": "0.99",
+          "最终判断": "确认媒体传播；不构成协会独立测评",
+          "判断置信度": "0.98",
+          "本地证据": "evidence/nmr/BSIA_SpecXMaster_media.html; screenshots/bsia_specxmaster_report.png",
+          "原始URL": "https://www.bsia.org.cn/site/content/32221.html",
+          "防误用": "外部域名不等于外部证据来源。"
+        },
+        "outcome_ids": [
+          "MAIN-003"
+        ],
+        "branch_ids": [
+          "D7.2"
+        ]
+      },
+      "U14": {
+        "row": {
+          "ID": "U14",
+          "成果": "SpecXMaster",
+          "日期": "2026-07-07",
+          "来源/使用者": "北京智源大会Agent for Science活动",
+          "证据等级": "E/I-外部活动中的内部陈述",
+          "使用或评价内容": "入选约50个方案中的12强；项目作者现场报告Top-1 65.3、Top-10约90。",
+          "是否对应项目成果": "是SpecXMaster",
+          "对应置信度": "0.99",
+          "主体关系": "活动组织外部，陈述者为成果作者",
+          "主体关系置信度": "0.95",
+          "最终判断": "有外部遴选可见度；性能仍是内部演示，协议未明",
+          "判断置信度": "0.92",
+          "本地证据": "evidence/media/baai_agent_for_science_specxmaster.html; screenshots/baai_agent_for_science_specxmaster.png",
+          "原始URL": "https://hub.baai.ac.cn/view/56150",
+          "防误用": "入围不等于独立复测；与技术报告数字不可无条件对齐。"
+        },
+        "outcome_ids": [
+          "MAIN-003"
+        ],
+        "branch_ids": [
+          "D1.2",
+          "D7.1"
+        ]
+      },
+      "U15": {
+        "row": {
+          "ID": "U15",
+          "成果": "SpecXMaster",
+          "日期": "2026-03-26",
+          "来源/使用者": "edTechniti博客",
+          "证据等级": "M-外部自媒体失实报道",
+          "使用或评价内容": "把NMR结构解析系统写成材料提案、性质模拟及实验闭环，页面无可核验实测。",
+          "是否对应项目成果": "名称对应，功能描述错误",
+          "对应置信度": "0.96",
+          "主体关系": "外部博客",
+          "主体关系置信度": "0.90",
+          "最终判断": "存在外部报道，但属于高风险误述，不能证明使用或评价",
+          "判断置信度": "0.95",
+          "本地证据": "evidence/media/edtechniti_specxmaster_blog.html; screenshots/edtechniti_specxmaster_blog.png",
+          "原始URL": "https://blog.edtechniti.com/ai-just-got-a-lab-coat-how-specxmaster-closes-the-loop-on-science",
+          "防误用": "应作为误用反例而非正面影响证据。"
+        },
+        "outcome_ids": [
+          "MAIN-003"
+        ],
+        "branch_ids": [
+          "D7.2"
+        ]
+      },
+      "U16": {
+        "row": {
+          "ID": "U16",
+          "成果": "Uni-Mol3",
+          "日期": "2025-09-05",
+          "来源/使用者": "中国人民大学许洪腾组读书会",
+          "证据等级": "U1-外部教学传播",
+          "使用或评价内容": "公开讲义讲解Uni-Mol3，未提供重跑、下游任务或部署结果。",
+          "是否对应项目成果": "是，精确模型",
+          "对应置信度": "0.99",
+          "主体关系": "项目外单位，但与Uni-Mol学术生态相邻",
+          "主体关系置信度": "0.90",
+          "最终判断": "确认校外学术讲读；未发现外部实际应用或独立benchmark",
+          "判断置信度": "0.91",
+          "本地证据": "evidence/models/official/ruc_unimol3_group_slides_2025-09-05.pdf",
+          "原始URL": "https://github.com/HongtengXu/Reading-List",
+          "防误用": "讲读不等于模型使用或效果评价。"
+        },
+        "outcome_ids": [
+          "MAIN-002"
+        ],
+        "branch_ids": [
+          "D3.2"
+        ]
+      },
+      "U17": {
+        "row": {
+          "ID": "U17",
+          "成果": "Innovator-VL",
+          "日期": "2026-01-29",
+          "来源/使用者": "InnovatorLM官方README / SciMaster",
+          "证据等级": "I-内部集成",
+          "使用或评价内容": "README明确称已适配SciMaster并提供官方Demo。",
+          "是否对应项目成果": "是，精确模型",
+          "对应置信度": "0.99",
+          "主体关系": "SciMaster/Bohrium属深势科技体系，项目关联",
+          "主体关系置信度": "0.97",
+          "最终判断": "确认团队自报内部平台集成；无外部用户日志",
+          "判断置信度": "0.90",
+          "本地证据": "evidence/models/official/innovator_vl_README.md",
+          "原始URL": "https://github.com/InnovatorLM/Innovator-VL",
+          "防误用": "内部平台适配不可写成第三方部署。"
+        },
+        "outcome_ids": [
+          "MAIN-001"
+        ],
+        "branch_ids": [
+          "D5.1"
+        ]
+      },
+      "U18": {
+        "row": {
+          "ID": "U18",
+          "成果": "Innovator-VL",
+          "日期": "2026-05-26",
+          "来源/使用者": "EQL-Act匿名ACL ARR稿（Submission 15631）",
+          "证据等级": "U2候选-后续benchmark",
+          "使用或评价内容": "在ReactBench/MISS-QA/SpecVQA报62.87/58.21/54.42，平均58.50；高于Qwen3-VL-8B 55.24，低于ChartGemma 61.35。",
+          "是否对应项目成果": "是，精确模型",
+          "对应置信度": "0.99",
+          "主体关系": "作者匿名，是否与项目重合未知",
+          "主体关系置信度": "0.45",
+          "最终判断": "后续统一评测候选；纳入表格可信，是否实际重跑及评价者独立性仍有限",
+          "判断置信度": "0.82",
+          "本地证据": "evidence/models/external_eval/; evidence/models/FINDINGS.md",
+          "原始URL": "https://openreview.net/forum?id=T1AG0abANn",
+          "防误用": "OpenReview抓取触发挑战且无逐模型日志；不能称已确认外部独立复现。"
+        },
+        "outcome_ids": [
+          "MAIN-001"
+        ],
+        "branch_ids": [
+          "D1.2",
+          "D3.2"
+        ]
+      },
+      "U19": {
+        "row": {
+          "ID": "U19",
+          "成果": "Innovator-VL",
+          "日期": "2026-01至03",
+          "来源/使用者": "机器之心、搜狐我爱计算机视觉、科技行者",
+          "证据等级": "M-外部媒体",
+          "使用或评价内容": "正面复述少数据、开源和跨学科性能主张；无独立运行环境或结果。",
+          "是否对应项目成果": "是，精确模型",
+          "对应置信度": "0.98",
+          "主体关系": "外部媒体，素材源自论文/团队",
+          "主体关系置信度": "0.95",
+          "最终判断": "确认传播，不是外部实测或部署",
+          "判断置信度": "0.97",
+          "本地证据": "evidence/models/media/innovator_*",
+          "原始URL": "见evidence/models/SOURCES.csv",
+          "防误用": "评论区或转述不能替代可核验用户案例。"
+        },
+        "outcome_ids": [
+          "MAIN-001"
+        ],
+        "branch_ids": [
+          "D7.2"
+        ]
+      },
+      "U20": {
+        "row": {
+          "ID": "U20",
+          "成果": "OmniScience",
+          "日期": "2026-08-19快照",
+          "来源/使用者": "UniParser团队在ModelScope/Hugging Face",
+          "证据等级": "I-内部发布与热度",
+          "使用或评价内容": "ModelScope API为2267下载、4 likes、约737.7GB；平台数字为动态快照。",
+          "是否对应项目成果": "是，精确数据集",
+          "对应置信度": "0.99",
+          "主体关系": "成果团队账号",
+          "主体关系置信度": "0.99",
+          "最终判断": "确认公开分发和访问热度；未找到具名第三方训练/部署",
+          "判断置信度": "0.89",
+          "本地证据": "evidence/models/official/omniscience_modelscope_api.json",
+          "原始URL": "https://modelscope.cn/datasets/UniParser/OmniScience",
+          "防误用": "下载不等于实际使用；数据卡自报月下载与API窗口不同。"
+        },
+        "outcome_ids": [
+          "MAIN-001"
+        ],
+        "branch_ids": [
+          "D4.1"
+        ]
+      },
+      "U21": {
+        "row": {
+          "ID": "U21",
+          "成果": "OmniScience",
+          "日期": "2026-04",
+          "来源/使用者": "ModelScope/CSDN、启明周报等",
+          "证据等级": "M-平台/利益相关传播",
+          "使用或评价内容": "正面介绍规模、质量、上线和下载；无新增独立实验。",
+          "是否对应项目成果": "是，精确数据集",
+          "对应置信度": "0.98",
+          "主体关系": "外部平台或投资相关传播，素材来自团队",
+          "主体关系置信度": "0.90",
+          "最终判断": "确认媒体传播；不构成第三方评价",
+          "判断置信度": "0.96",
+          "本地证据": "evidence/models/media/omniscience_*",
+          "原始URL": "见evidence/models/SOURCES.csv",
+          "防误用": "同名OmniScience LLM、AA benchmark和SRE工具均不属于本成果。"
+        },
+        "outcome_ids": [
+          "MAIN-001"
+        ],
+        "branch_ids": [
+          "D7.2"
+        ]
+      },
+      "U22": {
+        "row": {
+          "ID": "U22",
+          "成果": "AC-PEC Nature Synthesis论文",
+          "日期": "2025-09",
+          "来源/使用者": "IISER Kolkata；Nature Synthesis News & Views",
+          "证据等级": "E-外部同行评价",
+          "使用或评价内容": "正面评价交替极性光电催化用于对映选择性、氧化还原中性交叉偶联的价值；不是湿实验复现。",
+          "是否对应项目成果": "是，DOI精确对应",
+          "对应置信度": "0.99",
+          "主体关系": "校外作者；一人为原论文审稿人但非项目成员",
+          "主体关系置信度": "0.95",
+          "最终判断": "确认独立学术评价；无部署/复现",
+          "判断置信度": "0.95",
+          "本地证据": "evidence/media/nature_external_commentary_00897.html; screenshots/nature_external_commentary.png",
+          "原始URL": "https://doi.org/10.1038/s44160-025-00897-2",
+          "防误用": "评论文章不是重复实验；原论文2025-01-17收稿早于项目启动。"
+        },
+        "outcome_ids": [
+          "MAIN-004"
+        ],
+        "branch_ids": [
+          "D2.1",
+          "D3.2",
+          "D7.1"
+        ]
+      },
+      "U23": {
+        "row": {
+          "ID": "U23",
+          "成果": "AC-PEC及AC-eChem论文",
+          "日期": "2026",
+          "来源/使用者": "香港科技大学JACS后续论文",
+          "证据等级": "U2-概念采用",
+          "使用或评价内容": "开发不同的交替极性半频哪醇重排，并引用两篇项目相关论文作为代表实例。",
+          "是否对应项目成果": "是概念来源；非同一反应/装置",
+          "对应置信度": "0.96",
+          "主体关系": "外部团队",
+          "主体关系置信度": "0.95",
+          "最终判断": "确认外部知识/概念采用；未复现原底物、条件、平台或硬件",
+          "判断置信度": "0.88",
+          "本地证据": "evidence/chem_auto/raw/PMC13383718_BioC.json",
+          "原始URL": "https://doi.org/10.1021/jacs.6c09845",
+          "防误用": "概念采用不能写成项目反应或自动化平台被部署。"
+        },
+        "outcome_ids": [
+          "MAIN-004"
+        ],
+        "branch_ids": [
+          "D3.1",
+          "D3.2"
+        ]
+      },
+      "U24": {
+        "row": {
+          "ID": "U24",
+          "成果": "AC-PEC论文",
+          "日期": "2025-09至10",
+          "来源/使用者": "科学网、爱科学、搜狐有机合成、仪器信息网社区",
+          "证据等级": "M-媒体/自媒体",
+          "使用或评价内容": "正面解读新颖性、底物范围和绿色合成意义，均无第三方实验数据。",
+          "是否对应项目成果": "是，论文题名/DOI对应",
+          "对应置信度": "0.98",
+          "主体关系": "外部平台；内容源自论文或上游报道",
+          "主体关系置信度": "0.90",
+          "最终判断": "确认传播；不是独立评价/复现",
+          "判断置信度": "0.96",
+          "本地证据": "evidence/chem_auto/web_pages/sciencenet_ac_photoelectrocatalysis.html; evidence/chem_auto/web_pages/iikx_ac_photoelectrocatalysis.html",
+          "原始URL": "见evidence/chem_auto/SOURCES.csv",
+          "防误用": "转载链不得重复计为多个独立评价。"
+        },
+        "outcome_ids": [
+          "MAIN-004"
+        ],
+        "branch_ids": [
+          "D7.2"
+        ]
+      },
+      "U25": {
+        "row": {
+          "ID": "U25",
+          "成果": "非对称波形AC-eChem Nature Communications论文",
+          "日期": "2026-04后",
+          "来源/使用者": "外部JACS引文；东方理工校内新闻",
+          "证据等级": "E/M-概念引用与内部宣传",
+          "使用或评价内容": "一条校外概念引文；校内正面新闻；未见第三方复现或装置部署。",
+          "是否对应项目成果": "是，DOI精确对应",
+          "对应置信度": "0.99",
+          "主体关系": "引文外部；新闻为项目承担单位内部",
+          "主体关系置信度": "0.95",
+          "最终判断": "确认概念引用和传播；无外部实验/部署",
+          "判断置信度": "0.90",
+          "本地证据": "evidence/chem_auto/raw/openalex_citing_natcomm_72336.json; evidence/chem_auto/web_pages/nature_communications_72336.html",
+          "原始URL": "https://doi.org/10.1038/s41467-026-72336-5",
+          "防误用": "作者自有连续流装置的industrial viability论证不是企业采用。"
+        },
+        "outcome_ids": [
+          "MAIN-004"
+        ],
+        "branch_ids": [
+          "D2.1",
+          "D3.1",
+          "D3.2",
+          "D7.2"
+        ]
+      },
+      "N01": {
+        "row": {
+          "ID": "N01",
+          "成果": "Raman探针RIE=121",
+          "日期": "2026-08-19检索",
+          "来源/使用者": "精确数值、波数和累五烯组合检索",
+          "证据等级": "N-未检出",
+          "使用或评价内容": "未找到唯一分子、论文、专利、用户、部署或媒体精确命中。",
+          "是否对应项目成果": "无法确认；项目未给稳定结构ID",
+          "对应置信度": "0.65",
+          "主体关系": "无可判定主体",
+          "主体关系置信度": "0.00",
+          "最终判断": "公开检索未确认外部使用",
+          "判断置信度": "0.70",
+          "本地证据": "evidence/chem_auto/search_records/bing_raman_rie121.html",
+          "原始URL": "https://www.bing.com/search?q=%22RIE%3D121%22+Raman+probe+cumulene",
+          "防误用": "其他体系的高RIE探针不能验证本成果。"
+        },
+        "outcome_ids": [
+          "MAIN-003"
+        ],
+        "branch_ids": [
+          "D5.2"
+        ]
+      },
+      "N02": {
+        "row": {
+          "ID": "N02",
+          "成果": "CDPE 5 min / >99%",
+          "日期": "2026-08-19检索",
+          "来源/使用者": "CDPE、cumulene、条件与精确数值组合检索",
+          "证据等级": "N-未检出",
+          "使用或评价内容": "无外部复现、论文、专利、用户或报道。",
+          "是否对应项目成果": "无法确认；缩写歧义且无反应ID",
+          "对应置信度": "0.60",
+          "主体关系": "无可判定主体",
+          "主体关系置信度": "0.00",
+          "最终判断": "公开检索未确认外部使用",
+          "判断置信度": "0.65",
+          "本地证据": "evidence/chem_auto/search_records/bing_cdpe_5min_99.html",
+          "原始URL": "https://www.bing.com/search?q=%22CDPE%22+%225+min%22+%2299%25%22+cumulene+chemistry",
+          "防误用": "其他CDPE含义均为噪声。"
+        },
+        "outcome_ids": [
+          "MAIN-004"
+        ],
+        "branch_ids": [
+          "D5.2"
+        ]
+      },
+      "N03": {
+        "row": {
+          "ID": "N03",
+          "成果": "D-A筛选1,284,502 / 2/2",
+          "日期": "2026-08-19检索",
+          "来源/使用者": "精确数字+Diels-Alder/生物正交检索",
+          "证据等级": "N-未检出",
+          "使用或评价内容": "无外部用户、评价、论文、专利或媒体命中。",
+          "是否对应项目成果": "无法确认；无目标结构/反应名",
+          "对应置信度": "0.60",
+          "主体关系": "无可判定主体",
+          "主体关系置信度": "0.00",
+          "最终判断": "公开检索未确认外部使用",
+          "判断置信度": "0.65",
+          "本地证据": "evidence/chem_auto/search_records/bing_diels_alder_1284502.html",
+          "原始URL": "https://www.bing.com/search?q=%221%2C284%2C502%22+Diels-Alder+bioorthogonal+reaction",
+          "防误用": "筛选空间数字不是唯一成果标识。"
+        },
+        "outcome_ids": [
+          "MAIN-005"
+        ],
+        "branch_ids": [
+          "D5.2"
+        ]
+      },
+      "N04": {
+        "row": {
+          "ID": "N04",
+          "成果": "绿色MR-TADF OLED FWHM 19 nm",
+          "日期": "2026-08-19检索",
+          "来源/使用者": "CIE (0.271,0.704)+19 nm+MR-TADF检索",
+          "证据等级": "N-未检出项目结果",
+          "使用或评价内容": "找到omega-DABNA-PH约30 nm基线及无关19 nm OLED；未找到项目优化分子或外部器件测试。",
+          "是否对应项目成果": "基线对应；项目19 nm未确认",
+          "对应置信度": "0.70",
+          "主体关系": "假阳性均为外部团队",
+          "主体关系置信度": "0.90",
+          "最终判断": "未确认项目结果被使用",
+          "判断置信度": "0.75",
+          "本地证据": "evidence/chem_auto/search_records/bing_oled_fwhm19_cie.html; evidence/chem_auto/raw/unrelated_deepblue_oled_19nm_*",
+          "原始URL": "见evidence/chem_auto/SOURCES.csv",
+          "防误用": "相同FWHM数值不等于同一分子；项目19 nm是溶液PL，不能当器件EL采用。"
+        },
+        "outcome_ids": [
+          "MAIN-005"
+        ],
+        "branch_ids": [
+          "D5.2"
+        ]
+      },
+      "N05": {
+        "row": {
+          "ID": "N05",
+          "成果": "有机激光ASE 669 nJ/cm2",
+          "日期": "2026-08-19检索",
+          "来源/使用者": "精确阈值+BSBCz+organic laser检索",
+          "证据等级": "N-未检出",
+          "使用或评价内容": "未找到项目分子、外部ASE测试、部署、论文、专利或媒体。",
+          "是否对应项目成果": "无法确认；优化分子未命名",
+          "对应置信度": "0.65",
+          "主体关系": "无可判定主体",
+          "主体关系置信度": "0.00",
+          "最终判断": "公开检索未确认外部使用",
+          "判断置信度": "0.70",
+          "本地证据": "evidence/chem_auto/search_records/bing_laser_ase669.html",
+          "原始URL": "https://www.bing.com/search?q=%22669+nJ%2Fcm2%22+organic+laser+ASE+BSBCz",
+          "防误用": "669 nm波长不是669 nJ/cm2阈值。"
+        },
+        "outcome_ids": [
+          "MAIN-005"
+        ],
+        "branch_ids": [
+          "D5.2"
+        ]
+      },
+      "N06": {
+        "row": {
+          "ID": "N06",
+          "成果": "CPI 87% / -5.7 ppm/°C / 145 MPa",
+          "日期": "2026-08-19检索",
+          "来源/使用者": "341.8°C及多指标组合检索",
+          "证据等级": "N-未检出项目改进材料",
+          "使用或评价内容": "仅找到2017 HNTDA/MBCHA基线及综述/专利引用；无项目材料的外部测试或采用。",
+          "是否对应项目成果": "基线精确；项目材料未确认",
+          "对应置信度": "0.78",
+          "主体关系": "既有文献为外部",
+          "主体关系置信度": "0.95",
+          "最终判断": "未确认改进材料被使用",
+          "判断置信度": "0.80",
+          "本地证据": "evidence/chem_auto/search_records/bing_cpi_exact_metrics.html; evidence/chem_auto/raw/polymer_chemistry_2017_HNTDA_ESI.failed_cloudflare.html",
+          "原始URL": "见evidence/chem_auto/SOURCES.csv",
+          "防误用": "基线后续被引不能证明项目改进材料被用；ESI地址返回Cloudflare页，不是有效PDF。"
+        },
+        "outcome_ids": [
+          "MAIN-005"
+        ],
+        "branch_ids": [
+          "D5.2"
+        ]
+      },
+      "N07": {
+        "row": {
+          "ID": "N07",
+          "成果": "SpecLabOS",
+          "日期": "2026-08-19检索",
+          "来源/使用者": "精确英文、空格变体、中文及NMR/GPC/Raman/LC-MS组合",
+          "证据等级": "N-未检出",
+          "使用或评价内容": "无相关论文、代码、版本、部署、新闻、微信或第三方使用。",
+          "是否对应项目成果": "无公开对象可对应",
+          "对应置信度": "0.80",
+          "主体关系": "无可判定主体",
+          "主体关系置信度": "0.00",
+          "最终判断": "真实零结果；未检出置信度高",
+          "判断置信度": "0.97",
+          "本地证据": "evidence/nmr/WEB_CAPTURES.md; evidence/chem_auto/search_records/bing_speclabos.html",
+          "原始URL": "N/A",
+          "防误用": "SpecXMaster、Uni-Lab-OS、巴西SpecLab和UNSW目录均不是SpecLabOS。"
+        },
+        "outcome_ids": [],
+        "branch_ids": []
+      },
+      "N08": {
+        "row": {
+          "ID": "N08",
+          "成果": "自动化实验室/干湿闭环及效率指标",
+          "日期": "2026-08-19检索",
+          "来源/使用者": "平台名、团队、100%、+51.58%、-34.03%组合检索",
+          "证据等级": "N/I-内部自述且无外部验证",
+          "使用或评价内容": "可确认团队自述已有AI自动化实验室；无外部用户、验收、复测或独立日志验证效率。",
+          "是否对应项目成果": "与内部设施相关；不能逐项映射全部指标",
+          "对应置信度": "0.80",
+          "主体关系": "项目团队内部来源",
+          "主体关系置信度": "0.99",
+          "最终判断": "仅确认内部公开宣称；未确认外部部署或指标复测",
+          "判断置信度": "0.82",
+          "本地证据": "evidence/chem_auto/search_records/bing_automated_lab_deployment.html; evidence/chem_auto/FINDINGS.md",
+          "原始URL": "见evidence/chem_auto/SOURCES.csv",
+          "防误用": "反应论文不能替代系统准确率、工时或闭环验收。"
+        },
+        "outcome_ids": [],
+        "branch_ids": []
+      },
+      "X01": {
+        "row": {
+          "ID": "X01",
+          "成果": "Uni-Mol+",
+          "日期": "2024成果；2025-2026后续使用",
+          "来源/使用者": "AIRI/MIPT UniProp、华东理工Fluor-tools、长春理工MCMPP",
+          "证据等级": "X-项目前成果排除",
+          "使用或评价内容": "存在官方checkpoint初始化、有限/负面消融和多模态特征使用等真实外部案例。",
+          "是否对应项目成果": "对应Uni-Mol+，但不是Uni-Mol3/项目期新成果",
+          "对应置信度": "0.99",
+          "主体关系": "外部团队",
+          "主体关系置信度": "0.98",
+          "最终判断": "真实外部影响；因模型2024年已发表，从本项目期新成果影响中排除",
+          "判断置信度": "0.99",
+          "本地证据": "evidence/models/legacy/; evidence/models/FINDINGS.md",
+          "原始URL": "https://doi.org/10.1038/s41467-024-51321-w",
+          "防误用": "后续使用发生在项目期也不能改变成果形成时间。"
+        },
+        "outcome_ids": [
+          "MAIN-002"
+        ],
+        "branch_ids": [
+          "D2.1"
+        ]
+      },
+      "X02": {
+        "row": {
+          "ID": "X02",
+          "成果": "NMRNet",
+          "日期": "2024预印本/2025-03发表；后续反馈至2026",
+          "来源/使用者": "GitHub用户、Chemical Reviews、Journal of Cheminformatics",
+          "证据等级": "X-项目前成果排除",
+          "使用或评价内容": "外部用户称已跑通推理；另有5 epoch不等设置复现和外部综述评价；OpenAlex快照29引文。",
+          "是否对应项目成果": "对应NMRNet，但成果早于项目启动",
+          "对应置信度": "0.99",
+          "主体关系": "部分外部身份仅疑似，综述作者外部",
+          "主体关系置信度": "0.85",
+          "最终判断": "真实使用/评价信号，但不能归为本项目期新成果影响",
+          "判断置信度": "0.99",
+          "本地证据": "evidence/nmr/github_NMRNet_issues.json; evidence/nmr/ChemReviews_NMRNet_fulltext.xml; evidence/nmr/JCheminform_31P_NMRNet_citation.html",
+          "原始URL": "https://github.com/Colin-Jay/NMRNet",
+          "防误用": "5 epoch结果不能与论文50 epoch指标直接比较；引文不等于使用。"
+        },
+        "outcome_ids": [
+          "MAIN-003"
+        ],
+        "branch_ids": [
+          "D2.1"
+        ]
+      }
+    }
+  }
+}

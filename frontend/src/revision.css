@@ -1,0 +1,32 @@
+.suggestion-empty{font-size:12px;color:#8797aa;padding:12px;margin:0}
+.suggestion-item.highlighted{background:#edf4ff}
+.report-v14{grid-template-columns:300px minmax(0,1fr);align-items:start}
+.report-v14 .report-index{grid-column:1;grid-row:1 / span 3;align-self:stretch}
+.report-v14 .report-summary{grid-column:2;grid-row:1}
+.report-v14 .comparison{grid-column:2;grid-row:2}
+.report-v14 .follow-panel{grid-column:2;grid-row:3}
+.report-block-title{font-size:18px;color:#34516e;font-weight:650;padding-bottom:16px;margin-bottom:18px;border-bottom:1px solid var(--line)}
+.report-v14 .follow-item{align-items:flex-start}
+.report-v14 .follow-item>div{flex:1;min-width:0}
+.task-excerpt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.task-detail-button{flex-shrink:0;border:1px solid #b8cce0;border-radius:6px;color:#2f6498;background:#f6faff;padding:7px 10px;font-size:12px}
+.task-full-detail{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.9}
+.query-history{margin-bottom:24px}
+.section-no{font-size:13px;color:#93a5b7;font-weight:400;margin-right:9px}
+.pipeline-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px}
+.upload-summary{color:#4d8068!important;font-size:12px!important;margin-top:8px!important}
+.pipeline-stages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.pipeline-stages>div{min-width:0}.pipeline-stages strong{font-size:14px}.pipeline-stages p{font-size:12px;margin:10px 0 0}
+.pipeline-workbench input[type=file]{max-width:100%}.stage-error{color:#ab6734;overflow-wrap:anywhere}.pipeline-files-title{margin-top:24px}
+@media(max-width:700px){.pipeline-form-grid,.pipeline-stages{grid-template-columns:1fr}}
+.report-upgrades{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:20px}
+.report-upgrades>div{border:1px solid #dbe5ef;border-radius:8px;background:#fbfdff;padding:16px;min-width:0}
+.report-upgrades h3{font-size:14px}.report-upgrades p,.report-upgrades small{font-size:12px;color:#668097}
+.report-v14 .evidence-tag{max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:left}
+.report-v14>*{min-width:0}.report-v14 p,.report-v14 h1,.scope-candidates{overflow-wrap:anywhere}
+.task-draft-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:16px}
+.el-dialog__body{overflow-wrap:anywhere;min-width:0}.el-dialog{max-width:calc(100vw - 32px);overflow-x:hidden}
+.query-history .section-heading h2{font-size:17px}
+.query-history .section-heading p{font-size:12px;color:#8394a7;margin:8px 0 0}
+@media(max-width:900px){.report-v14{grid-template-columns:235px minmax(0,1fr)}.report-v14 .grade-area{grid-template-columns:1fr}.report-v14 .grade-box{border-right:0;border-bottom:1px solid var(--line);padding-bottom:16px}}
+@media(max-width:800px){.report-v14{display:flex}.report-v14 .report-index{order:0}.report-v14 .follow-item{flex-wrap:wrap}.report-v14 .task-detail-button{margin-left:40px}.simplified-shell .topbar>div>.environment-dot{display:none}.top-brand small{display:none}.fixed-query-page .hero h1{font-size:27px}}

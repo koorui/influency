@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dca-purification-config/v1",
+  "title": "Data purification configuration",
+  "type": "object",
+  "required": ["schema_version", "dataset"],
+  "properties": {
+    "schema_version": {"const": "dca-purification-config/v1"},
+    "dataset": {
+      "type": "object",
+      "required": ["id_field", "required_fields", "dedupe_fields"],
+      "properties": {
+        "id_field": {"type": "string", "minLength": 1},
+        "label_field": {"type": "string"},
+        "required_fields": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "field_types": {"type": "object"},
+        "allowed_labels": {"type": "array"},
+        "dedupe_fields": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "similarity_fields": {"type": "array", "items": {"type": "string"}},
+        "overlap_fields": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "selection": {
+      "type": "object",
+      "required": ["target_size", "item_id_field", "model_id_field", "score_field"],
+      "properties": {
+        "target_size": {"type": "integer", "minimum": 1},
+        "item_id_field": {"type": "string"},
+        "response_item_id_field": {"type": "string"},
+        "model_id_field": {"type": "string"},
+        "score_field": {"type": "string"},
+        "group_field": {"type": "string"},
+        "min_responses": {"type": "integer", "minimum": 1},
+        "min_variance": {"type": "number", "minimum": 0},
+        "min_discrimination": {"type": "number", "minimum": -1, "maximum": 1},
+        "ensure_group_coverage": {"type": "boolean"}
+      }
+    }
+  }
+}

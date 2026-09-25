@@ -1,0 +1,131 @@
+{
+  "source_release": "双层影响力工具_v19_交付包_20260923_0735",
+  "standard_version": "outcome-d1-d7-evaluation.v19",
+  "files": [
+    {
+      "source": "backend/metric_judgment/__init__.py",
+      "bundled": "runtime/metric_judgment/__init__.py",
+      "sha256": "df0f7c4a2bf576287f282933ea5f02e7e0ffc8da134db6af3ed8a66d215d6fc2"
+    },
+    {
+      "source": "backend/metric_judgment/active_indicators.py",
+      "bundled": "runtime/metric_judgment/active_indicators.py",
+      "sha256": "ad13641eb9d066b0949f1f14cff1f70084f746de49a8b1e466dfe3e21155fa41"
+    },
+    {
+      "source": "backend/metric_judgment/citation_materials.py",
+      "bundled": "runtime/metric_judgment/citation_materials.py",
+      "sha256": "fe9f6fe53de4e099bba30bd14cdc638cb0aafab518ce275329b0286c99d16e21"
+    },
+    {
+      "source": "backend/metric_judgment/config.py",
+      "bundled": "runtime/metric_judgment/config.py",
+      "sha256": "442d8db992cb73fd79ccc81d4bff903eaaf0325b1244e053b4ed4712e6ef04cd"
+    },
+    {
+      "source": "backend/metric_judgment/d_dimension_framework.py",
+      "bundled": "runtime/metric_judgment/d_dimension_framework.py",
+      "sha256": "444563aa3fef40de800a7c07dd76cd53550d365d023481d473b2089a06a2432d"
+    },
+    {
+      "source": "backend/metric_judgment/evaluation_policy.py",
+      "bundled": "runtime/metric_judgment/evaluation_policy.py",
+      "sha256": "0025b20ae3aa2aa10aec1583e8732f7affd2e2817c933e25ee3c294f7f4ec630"
+    },
+    {
+      "source": "backend/metric_judgment/evidence_adapter.py",
+      "bundled": "runtime/metric_judgment/evidence_adapter.py",
+      "sha256": "410f13b90ead0f13080332ae4d9781cf172e3d9f9805268425637ef24599f96f"
+    },
+    {
+      "source": "backend/metric_judgment/evidence_repository.py",
+      "bundled": "runtime/metric_judgment/evidence_repository.py",
+      "sha256": "fc7fd80d00761f8c74fa276c7169d042ac175c214860f209af65c69e5858b4c0"
+    },
+    {
+      "source": "backend/metric_judgment/external_claim_routing.py",
+      "bundled": "runtime/metric_judgment/external_claim_routing.py",
+      "sha256": "5e4c2aca61f302e42e4a351dbdc10c5d58ce908908255ca2d4b08343c97a8b27"
+    },
+    {
+      "source": "backend/metric_judgment/external_search_import.py",
+      "bundled": "runtime/metric_judgment/external_search_import.py",
+      "sha256": "914e394d41ba2fcd37cdddfeee51d245cce1e10118e1271987a6fcd6b20f63da"
+    },
+    {
+      "source": "backend/metric_judgment/indicator_catalog.py",
+      "bundled": "runtime/metric_judgment/indicator_catalog.py",
+      "sha256": "558c9b0135ae74299214970c0972eea6d15adf8e43b7a68be12a3fb77959bc4d"
+    },
+    {
+      "source": "backend/metric_judgment/indicator_product.py",
+      "bundled": "runtime/metric_judgment/indicator_product.py",
+      "sha256": "557a8dc8e8ab1701c9b94991f99c50346988dc36fd01978d6f2f38b740c7d9f6"
+    },
+    {
+      "source": "backend/metric_judgment/input_coverage.py",
+      "bundled": "runtime/metric_judgment/input_coverage.py",
+      "sha256": "1dd52a94b816fa5c72a6b9177973f7fa84533fa908155958c026cbc655dc28e7"
+    },
+    {
+      "source": "backend/metric_judgment/integration_v4.py",
+      "bundled": "runtime/metric_judgment/integration_v4.py",
+      "sha256": "6a13bc4e6ef34eabd049e0d5d7a8b2446acbfc4710d97be48cec25facd54aaa7"
+    },
+    {
+      "source": "backend/metric_judgment/llm.py",
+      "bundled": "runtime/metric_judgment/llm.py",
+      "sha256": "af5b8215a37fff2aea2a298d592579fc95635401aa3f5eefe2479c555c77aafb"
+    },
+    {
+      "source": "backend/metric_judgment/material_routing.py",
+      "bundled": "runtime/metric_judgment/material_routing.py",
+      "sha256": "7dad313f3322bf34a54845f08a6aa30d28e5228b0853d059e775ab7f976603ed"
+    },
+    {
+      "source": "backend/metric_judgment/material_routing_review.json",
+      "bundled": "runtime/metric_judgment/material_routing_review.json",
+      "sha256": "1926db96014e1c5bf3349a6a535cda410e6c2d5cb80ad3f373da4379d35dd1fb"
+    },
+    {
+      "source": "backend/metric_judgment/milestones.py",
+      "bundled": "runtime/metric_judgment/milestones.py",
+      "sha256": "0cc332467d3074cf0ed0161b20daa9294d6881d6ab0b2c4405bb83d8a8f3cbc8"
+    },
+    {
+      "source": "backend/metric_judgment/prepared_evidence.py",
+      "bundled": "runtime/metric_judgment/prepared_evidence.py",
+      "sha256": "b4b7e4e0d6540eb2c4b34a5a82e1d225c4272a3d18504611f4818cb84c09fc1c"
+    },
+    {
+      "source": "backend/metric_judgment/trace.py",
+      "bundled": "runtime/metric_judgment/trace.py",
+      "sha256": "39dd485e0fff3d4ac26d0a68e475d5f8219bb87b3e0c9cff5f0dc3880e576968"
+    },
+    {
+      "source": "backend/metric_judgment/upstream_material_review.json",
+      "bundled": "runtime/metric_judgment/upstream_material_review.json",
+      "sha256": "9eed81205af289c054c860af132b4956efdae03624bb6003a67edf5fc5bd5c85"
+    },
+    {
+      "source": "backend/metric_judgment/upstream_materials.py",
+      "bundled": "runtime/metric_judgment/upstream_materials.py",
+      "sha256": "53b49bb775a4943c44cd0dabf97fd6e77449515e7536c3cb37c1f294facbf305"
+    },
+    {
+      "source": "impact_eval/__init__.py",
+      "bundled": "runtime/impact_eval/__init__.py",
+      "sha256": "b82166b34447f09fb928e9494b4bc30c5f8984b5c36fa2f5169531e19e5ac426"
+    },
+    {
+      "source": "impact_eval/config.py",
+      "bundled": "runtime/impact_eval/config.py",
+      "sha256": "54a6da3811769ade39b24c5325903c0376525b5ffc717082784c4af181027e24"
+    },
+    {
+      "source": "impact_eval/llm.py",
+      "bundled": "runtime/impact_eval/llm.py",
+      "sha256": "c115f23514cd8690a31086d0070c57f4f61bacfe921162e86821286307b6df46"
+    }
+  ]
+}

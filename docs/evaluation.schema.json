@@ -1,0 +1,230 @@
+{
+  "$defs": {
+    "Dimension": {
+      "additionalProperties": false,
+      "properties": {
+        "topic": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Topic",
+          "type": "string"
+        },
+        "claim": {
+          "maxLength": 10000,
+          "title": "Claim",
+          "type": "string"
+        },
+        "assessment": {
+          "maxLength": 10000,
+          "title": "Assessment",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "topic",
+        "claim",
+        "assessment"
+      ],
+      "title": "Dimension",
+      "type": "object"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "source": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        },
+        "excerpt": {
+          "maxLength": 10000,
+          "title": "Excerpt",
+          "type": "string"
+        },
+        "material_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Material Id"
+        },
+        "locator": {
+          "default": "",
+          "maxLength": 200,
+          "title": "Locator",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "source",
+        "excerpt"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "FollowUp": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "detail": {
+          "maxLength": 10000,
+          "title": "Detail",
+          "type": "string"
+        },
+        "kind": {
+          "default": "material",
+          "enum": [
+            "material",
+            "expert",
+            "improvement"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "detail"
+      ],
+      "title": "FollowUp",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "title": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "keywords": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 30,
+      "minItems": 1,
+      "title": "Keywords",
+      "type": "array"
+    },
+    "category": {
+      "default": "科研成果",
+      "maxLength": 100,
+      "title": "Category",
+      "type": "string"
+    },
+    "summary": {
+      "maxLength": 10000,
+      "minLength": 1,
+      "title": "Summary",
+      "type": "string"
+    },
+    "level": {
+      "anyOf": [
+        {
+          "maximum": 6,
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Level"
+    },
+    "level_name": {
+      "maxLength": 100,
+      "title": "Level Name",
+      "type": "string"
+    },
+    "reasons": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 30,
+      "minItems": 1,
+      "title": "Reasons",
+      "type": "array"
+    },
+    "dimensions": {
+      "items": {
+        "$ref": "#/$defs/Dimension"
+      },
+      "maxItems": 50,
+      "minItems": 1,
+      "title": "Dimensions",
+      "type": "array"
+    },
+    "evidence": {
+      "items": {
+        "$ref": "#/$defs/Evidence"
+      },
+      "maxItems": 200,
+      "title": "Evidence",
+      "type": "array"
+    },
+    "follow_ups": {
+      "items": {
+        "$ref": "#/$defs/FollowUp"
+      },
+      "maxItems": 50,
+      "title": "Follow Ups",
+      "type": "array"
+    },
+    "is_demo": {
+      "default": false,
+      "title": "Is Demo",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "title",
+    "keywords",
+    "summary",
+    "level_name",
+    "reasons",
+    "dimensions"
+  ],
+  "title": "Evaluation",
+  "type": "object"
+}

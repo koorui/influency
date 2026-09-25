@@ -1,0 +1,4 @@
+interface:
+  display_name: "成果影响力评价工作流"
+  short_description: "串联成果建卡、真实检索、贡献归因和双层评估，保留来源、确认与独立结果"
+  default_prompt: "使用 $impact-evaluation-pipeline 检查项目材料和阶段交付，创建可追溯的分阶段评价任务。"

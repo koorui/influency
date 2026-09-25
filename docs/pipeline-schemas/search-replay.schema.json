@@ -1,0 +1,180 @@
+{
+  "$defs": {
+    "ReplayFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "conflicts",
+            "not_found",
+            "needs_expert"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "statement": {
+          "title": "Statement",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "related_claim_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Related Claim Ids",
+          "type": "array"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "status",
+        "statement",
+        "reason",
+        "related_claim_ids",
+        "evidence_ids"
+      ],
+      "title": "ReplayFinding",
+      "type": "object"
+    },
+    "ScopedEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "project_id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Project Id",
+          "type": "string"
+        },
+        "outcome_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Outcome Id",
+          "type": "string"
+        },
+        "source_type": {
+          "enum": [
+            "project",
+            "search"
+          ],
+          "title": "Source Type",
+          "type": "string"
+        },
+        "locator": {
+          "minLength": 1,
+          "title": "Locator",
+          "type": "string"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        }
+      },
+      "required": [
+        "id",
+        "project_id",
+        "outcome_id",
+        "source_type",
+        "locator",
+        "text"
+      ],
+      "title": "ScopedEvidence",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "search-replay.v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "outcome_id": {
+      "title": "Outcome Id",
+      "type": "string"
+    },
+    "mode": {
+      "const": "historical_replay",
+      "title": "Mode",
+      "type": "string"
+    },
+    "original_run_id": {
+      "minLength": 1,
+      "title": "Original Run Id",
+      "type": "string"
+    },
+    "original_completed_at": {
+      "minLength": 1,
+      "title": "Original Completed At",
+      "type": "string"
+    },
+    "source_label": {
+      "minLength": 1,
+      "title": "Source Label",
+      "type": "string"
+    },
+    "evidence": {
+      "items": {
+        "$ref": "#/$defs/ScopedEvidence"
+      },
+      "title": "Evidence",
+      "type": "array"
+    },
+    "findings": {
+      "items": {
+        "$ref": "#/$defs/ReplayFinding"
+      },
+      "title": "Findings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "project_id",
+    "outcome_id",
+    "mode",
+    "original_run_id",
+    "original_completed_at",
+    "source_label",
+    "evidence",
+    "findings"
+  ],
+  "title": "SearchReplay",
+  "type": "object"
+}

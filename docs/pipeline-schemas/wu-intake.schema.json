@@ -1,0 +1,401 @@
+{
+  "$defs": {
+    "CardField": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "enum": [
+            "outcome_name",
+            "outcome_type",
+            "description",
+            "problem_solved",
+            "participating_units",
+            "core_members",
+            "related_outputs",
+            "key_metrics",
+            "baseline",
+            "ai_role",
+            "claimed_application",
+            "support_materials"
+          ],
+          "title": "Name",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "confirmed",
+            "partial",
+            "missing"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "value",
+        "status",
+        "evidence_ids"
+      ],
+      "title": "CardField",
+      "type": "object"
+    },
+    "Comparison": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "baseline": {
+          "$ref": "#/$defs/Measurement"
+        },
+        "observed": {
+          "$ref": "#/$defs/Measurement"
+        },
+        "direction": {
+          "enum": [
+            "lower_is_better",
+            "higher_is_better",
+            "descriptive_only"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "comparability_status": {
+          "enum": [
+            "established",
+            "partial",
+            "unknown"
+          ],
+          "title": "Comparability Status",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "involved_factor_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Involved Factor Ids",
+          "type": "array"
+        },
+        "isolated_factor_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Isolated Factor Ids",
+          "type": "array"
+        },
+        "notes": {
+          "title": "Notes",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "baseline",
+        "observed",
+        "direction",
+        "comparability_status",
+        "evidence_ids",
+        "involved_factor_ids",
+        "isolated_factor_ids",
+        "notes"
+      ],
+      "title": "Comparison",
+      "type": "object"
+    },
+    "Factor": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "role_in_attribution": {
+          "enum": [
+            "baseline",
+            "contributor",
+            "target"
+          ],
+          "title": "Role In Attribution",
+          "type": "string"
+        },
+        "evaluate_independent_increment": {
+          "title": "Evaluate Independent Increment",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "type",
+        "role",
+        "role_in_attribution",
+        "evaluate_independent_increment"
+      ],
+      "title": "Factor",
+      "type": "object"
+    },
+    "IntakeCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "scope": {
+          "title": "Scope",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "scope",
+        "evidence_ids"
+      ],
+      "title": "IntakeCandidate",
+      "type": "object"
+    },
+    "IntakeEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "material_id": {
+          "title": "Material Id",
+          "type": "string"
+        },
+        "locator": {
+          "title": "Locator",
+          "type": "string"
+        },
+        "quote": {
+          "title": "Quote",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "material_id",
+        "locator",
+        "quote"
+      ],
+      "title": "IntakeEvidence",
+      "type": "object"
+    },
+    "Measurement": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "value",
+        "unit"
+      ],
+      "title": "Measurement",
+      "type": "object"
+    },
+    "PreparedClaim": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "factor_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Factor Id"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "factor_id",
+        "evidence_ids"
+      ],
+      "title": "PreparedClaim",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "enum": [
+        "ready",
+        "needs_scope_confirmation",
+        "insufficient_project_context"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "project_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Project Name"
+    },
+    "canonical_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Canonical Name"
+    },
+    "confidence": {
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "candidates": {
+      "items": {
+        "$ref": "#/$defs/IntakeCandidate"
+      },
+      "title": "Candidates",
+      "type": "array"
+    },
+    "outcome_card": {
+      "items": {
+        "$ref": "#/$defs/CardField"
+      },
+      "title": "Outcome Card",
+      "type": "array"
+    },
+    "evidence": {
+      "items": {
+        "$ref": "#/$defs/IntakeEvidence"
+      },
+      "title": "Evidence",
+      "type": "array"
+    },
+    "factors": {
+      "items": {
+        "$ref": "#/$defs/Factor"
+      },
+      "title": "Factors",
+      "type": "array"
+    },
+    "comparisons": {
+      "items": {
+        "$ref": "#/$defs/Comparison"
+      },
+      "title": "Comparisons",
+      "type": "array"
+    },
+    "claims": {
+      "items": {
+        "$ref": "#/$defs/PreparedClaim"
+      },
+      "title": "Claims",
+      "type": "array"
+    },
+    "gaps": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Gaps",
+      "type": "array"
+    }
+  },
+  "required": [
+    "status",
+    "project_name",
+    "canonical_name",
+    "confidence",
+    "candidates",
+    "outcome_card",
+    "evidence",
+    "factors",
+    "comparisons",
+    "claims",
+    "gaps"
+  ],
+  "title": "WuIntake",
+  "type": "object"
+}

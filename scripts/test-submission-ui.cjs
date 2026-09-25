@@ -1,0 +1,50 @@
+const {chromium}=require('../frontend/node_modules/playwright');
+const fs=require('fs');const path=require('path');
+(async()=>{
+  const output=path.resolve(__dirname,'../backend/storage/submission-ui-test-'+Date.now());fs.mkdirSync(output,{recursive:true});
+  const browser=await chromium.launch({headless:true});
+  try{
+    const context=await browser.newContext({viewport:{width:1280,height:900}});const page=await context.newPage();
+    const username='ui-test-'+Date.now();
+    const registration=await context.request.post('http://localhost:5173/api/auth/register',{data:{username,password:'submission-ui-test-123'}});
+    if(registration.status()!==201)throw new Error('Test registration failed: '+registration.status());
+    await page.goto('http://localhost:5173/submit');
+    await page.getByLabel('所属项目 *',{exact:true}).fill('界面验收专用项目（非科研评价）');
+    await page.getByLabel('成果名称 *',{exact:true}).fill('界面验收专用成果（非科研结果）');
+    await page.getByLabel('具体产出、解决的问题和新增贡献 *',{exact:true}).fill('这是一条界面验收数据，仅测试表单上传与管理员受理，不作为科研评价材料。');
+    await page.getByLabel('AI具体参与环节及作用 *',{exact:true}).fill('测试填写项，不代表实际贡献。');
+    await page.getByLabel('单位全称及主要贡献 *',{exact:true}).fill('测试单位：界面验收');
+    await page.getByLabel('姓名、单位和主要贡献 *',{exact:true}).fill('测试人员：流程验证');
+    await page.getByLabel('选择文件或ZIP',{exact:true}).setInputFiles({name:'ui-test-only.txt',mimeType:'text/plain',buffer:Buffer.from('界面验收数据，不是科研证据。','utf8')});
+    await page.getByText('ui-test-only.txt',{exact:false}).waitFor();
+    await page.screenshot({path:path.join(output,'form.png'),fullPage:true,animations:'disabled'});
+    const [response]=await Promise.all([page.waitForResponse(r=>r.url().endsWith('/api/submissions')&&r.request().method()==='POST'),page.getByRole('button',{name:'提交给管理员',exact:true}).click()]);
+    if(response.status()!==201)throw new Error('Submission failed: '+await response.text());
+    const submission=await response.json();
+    await page.getByRole('heading',{name:'已提交，等待管理员受理'}).waitFor();
+    await page.screenshot({path:path.join(output,'submitted.png'),fullPage:true,animations:'disabled'});
+    await page.goto('http://localhost:5173/tickets');
+    await page.getByText('界面验收专用成果（非科研结果）',{exact:true}).waitFor();
+    const login=await context.request.post('http://localhost:5173/api/auth/login',{data:{username:'admin',password:'123456'}});
+    if(login.status()!==200)throw new Error('Admin login failed');
+    await page.goto('http://localhost:5173/admin');
+    const row=page.getByRole('row').filter({hasText:'界面验收专用成果（非科研结果）'}).first();
+    await row.getByRole('button',{name:'吴老师单项评价'}).click();
+    await page.getByRole('heading',{name:'材料与评价任务'}).waitFor();
+    await page.getByText('ui-test-only.txt',{exact:true}).first().waitFor();
+    await page.screenshot({path:path.join(output,'admin-handoff.png'),fullPage:true,animations:'disabled'});
+    await page.getByRole('tab',{name:'完整工作流',exact:true}).click();
+    await page.getByText('＋ 新建完整评价工作流',{exact:true}).click();
+    const workflow=page.locator('.pipeline-workbench');
+    await workflow.locator('.el-form-item').filter({hasText:'关联用户成果工单'}).locator('.el-select').click();
+    await page.getByRole('option',{name:'界面验收专用成果（非科研结果）',exact:true}).last().click();
+    await workflow.getByText('ui-test-only.txt',{exact:true}).first().waitFor();
+    if(await page.getByRole('textbox',{name:'工作流项目名称',exact:true}).inputValue()!=='界面验收专用项目（非科研评价）')throw new Error('Pipeline project context not carried over');
+    await page.screenshot({path:path.join(output,'pipeline-handoff.png'),fullPage:true,animations:'disabled'});
+    // Close this deliberately non-scientific test ticket; never start an evaluation or publish it.
+    const closed=await context.request.post(`http://localhost:5173/api/admin/tickets/${submission.ticket_id}/close`,{data:{}});
+    if(closed.status()!==200)throw new Error('Test ticket cleanup failed');
+    fs.writeFileSync(path.join(output,'result.json'),JSON.stringify({status:'passed',ticket_id:submission.ticket_id,submission_id:submission.id,material_ids:submission.material_ids,test_ticket_closed:true,checks:['browser fixed form','material upload','submission','owner ticket visibility','admin material handoff','full pipeline material and project handoff']},null,2));
+    console.log(JSON.stringify({status:'passed',output}));
+  }finally{await browser.close()}
+})().catch(e=>{console.error(e);process.exitCode=1});

@@ -1,0 +1,17 @@
+# 输入与模块交接
+
+网页创建需要成果名、项目ID/名称、冻结成果ID、已上传材料。材料文件保存于后台，每次工作流固化提取文本。可选项目名并不意味着可假造来源；实际确认规则仍由吴老师定位阶段执行。
+
+命令行输入包含title、project_id、project_name、outcome_id、materials（id/filename/text）、confirmed_scope。search_mode选择live或replay；live需search_boundary（project_start_date/review_cutoff/cutoff_basis），replay需search_replay。另可提供v19_workspace、v19_scope_mapping。服务器端接口通过material_ids读取材料，不接受浏览器指定任意本地路径。用户固定成果表单先生成工单，管理员受理时带入已存材料。
+
+Search交接兼容search-replay.v1，mode可为historical_replay或live_search；包含project_id、outcome_id、original_run_id、original_completed_at、source_label、evidence及findings。live同时保留完整project-search.v1结果、时点审计、真实请求和原文归档；只有符合本次时点与正文核验条件的来源进入正式evidence。证据保留id/project_id/outcome_id/source_type=search/locator/text/url；findings保留id/status/statement/reason/related_claim_ids/evidence_ids。发现状态允许conflicts/not_found/needs_expert；支持性的外部材料放在evidence，并不强行改成冲突。查询日期、URL及引文由真实记录回填，不能根据模型文字宣称联网已经执行。
+
+v19工作区保持indicator-workspace.v6，不能用一份模型摘要替代现有显式路由。v19_scope_mapping包含outcome_id、canonical_name、reviewed=true，必须经过管理员检查；名字相似不代表课题级对象和具体成果范围相等。不明确时先等待，不自动将具体分子上推为整个课题。
+
+单独评价既有冻结子成果时另填frozen_child_id、evidence_routes（D1–D7到实际证据ID数组）和review_note。保留本地成果ID与冻结ID对应关系，不继承父课题其他成果的证据。平台提供选择子成果和证据的界面，无需在浏览器手写整份JSON路由。
+
+v19阶段仅评价本轮指定冻结成果，保留原卡片ID与标题；项目综合的scope显式写成这一个成果，不能声称本轮评完整个项目。若需要多成果项目评议，后续扩展组合范围，不把单成果归纳冒充全项目。
+
+吴老师输出有完整卡片、七维、原文证据和等级；v19输出保留原引擎七维、成果、特定层、全局层和协同判断。两者输出分别保存，前一套模型判断不能变成后一套的原始事实。
+
+运行状态：queued/pending → running → succeeded，或waiting/failed。通过管理端补充或重试，不直接修改运行目录的pipeline.json或删除execution.lock。遇进程异常需先核实是否仍在运行，再由运维恢复，不能按经过时间随意重启仍在运行的模型任务。

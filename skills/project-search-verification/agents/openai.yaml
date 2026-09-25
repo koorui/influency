@@ -1,0 +1,4 @@
+interface:
+  display_name: "项目Search核验"
+  short_description: "按评审时点检索SOTA、前序成果、使用媒体与仓库证据并核验声明指标"
+  default_prompt: "使用 $project-search-verification 根据项目材料和阶段截止日期完成五模块公开检索，保留来源和排除项。"

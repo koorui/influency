@@ -1,0 +1,4 @@
+interface:
+  display_name: "数据提纯与AI贡献归因"
+  short_description: "使用原版确定性代码执行数据提纯、贡献因素归因并保存未解决事项与冲突"
+  default_prompt: "使用 $data-purification-ai-attribution 校验当前成果的结构化证据并运行AI贡献归因。"

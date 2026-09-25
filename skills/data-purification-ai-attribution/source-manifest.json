@@ -1,0 +1,50 @@
+{
+  "version": "dca-integration/1.1.0",
+  "files": [
+    {
+      "source": "dca_integration/__init__.py",
+      "bundled": "runtime/dca_integration/__init__.py",
+      "sha256": "e4a4aa00b12cd9c1705de6eef19bc2dbb787034965ee554a8b6ba2c2f6a0e206"
+    },
+    {
+      "source": "dca_integration/__main__.py",
+      "bundled": "runtime/dca_integration/__main__.py",
+      "sha256": "76fa916e93e0ae1a6c1bb51dcc0bcf289c014e9f760a47165f8a84401ccf41d7"
+    },
+    {
+      "source": "dca_integration/attribution.py",
+      "bundled": "runtime/dca_integration/attribution.py",
+      "sha256": "a1c523b1493e2a9ff3ca4254efc5575368b9b445803b35cd79bc2f3b63dd74b3"
+    },
+    {
+      "source": "dca_integration/cli.py",
+      "bundled": "runtime/dca_integration/cli.py",
+      "sha256": "608a3f6f730c20a4ed75d6fb68244bc00b5e2a1241df25c2c33a4636211c554a"
+    },
+    {
+      "source": "dca_integration/common.py",
+      "bundled": "runtime/dca_integration/common.py",
+      "sha256": "2eb07a6dbc4319d894f8c3c1248383945e8a8b77759c5b03afecc8fe96688a9e"
+    },
+    {
+      "source": "dca_integration/purification.py",
+      "bundled": "runtime/dca_integration/purification.py",
+      "sha256": "a88a48e16ab9ed0308a9d0ebf81038aad83c9129de676ddcec3cfafa885fdea0"
+    },
+    {
+      "source": "dca_integration/reports.py",
+      "bundled": "runtime/dca_integration/reports.py",
+      "sha256": "9dc503a21da5b0feaf7e6db0bb57e7b6e0c1b58df5877a452f1fefcf9a5d7401"
+    },
+    {
+      "source": "schemas/attribution-input.schema.json",
+      "bundled": "schemas/attribution-input.schema.json",
+      "sha256": "e635c662ee98062b585b2e14b91dd4fb001397744113e265ef62cc913c6bc4f7"
+    },
+    {
+      "source": "schemas/purification-config.schema.json",
+      "bundled": "schemas/purification-config.schema.json",
+      "sha256": "d4309d18ee1a06af1a95442c23835c823f0a92ef30caa8a382c716f829b490ec"
+    }
+  ]
+}

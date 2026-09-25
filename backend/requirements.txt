@@ -1,0 +1,14 @@
+fastapi==0.135.1
+uvicorn[standard]==0.41.0
+SQLAlchemy==2.0.48
+pymysql[rsa]==1.1.2
+alembic==1.18.4
+pydantic-settings==2.13.1
+PyJWT==2.12.1
+python-multipart==0.0.22
+pypdf==6.8.0
+python-docx==1.2.0
+openpyxl==3.1.5
+httpx==0.28.1
+pytest==9.0.2
+openai==1.63.0
