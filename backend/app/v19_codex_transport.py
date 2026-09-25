@@ -96,7 +96,7 @@ class CodexV19Client:
                 'You are the model transport for ONE call of the v19 engine, which the host is already executing. '
                 'Do not launch the v19 scripts or create another pipeline. Apply v19_system_prompt to v19_input. '+
                 ('Return the requested v19 JSON object directly, not a serialized JSON string. Follow the supplied output schema for this call type. ' if direct else 'Return result_json containing the requested complete object. Preserve impact_level/scope_impact_level as applicable. ')+
-                'The code-defined v19 rules are authoritative for this call; do not import Wu-v2 levels. '
+                'The supplied unified-double-layer-impact rubric is authoritative for L1-L6 semantics; do not use the legacy v19 L-level meanings. '
                 'No new Search, no invented source IDs. Missing facts remain pending. '
                 'Every key_facts/evidence_chain entry must contain a nonempty fact, source_ids and outcome_ids. '
                 'An absence of materials belongs in missing_inputs, not in a fact with empty references. Empty fact arrays are allowed. '

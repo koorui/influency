@@ -89,6 +89,57 @@ def pipeline_report_draft(id: str,db: DBSession=Depends(get_db),user: User=Depen
     return serialize(row,('search_text',))
 
 
+@app.get('/api/admin/pipeline-reports/{id}/double-layer')
+def pipeline_double_layer(id: str, db: DBSession = Depends(get_db), user: User = Depends(admin)):
+    """Return the unified, reviewable double-layer evaluation package.
+
+    The management layer and D1-D7 evidence layer share L1-L6 semantics while
+    retaining independent evidence and provenance. They are deliberately not
+    averaged or numerically merged.
+    """
+    from uuid import UUID
+    from .pipeline_api import job_or_404, directory
+    try:
+        identifier = UUID(id)
+    except ValueError:
+        raise HTTPException(422, '工作流编号无效')
+    job_or_404(db, identifier)
+    state = __import__('app.pipeline_store', fromlist=['PipelineStore']).PipelineStore(directory(identifier)).read()
+    stages = state['stages']
+    if stages['wu_evaluation']['status'] != 'succeeded' or stages['v19_evaluation']['status'] != 'succeeded':
+        raise HTTPException(409, '双层评价尚未完成，暂不可生成统一结果')
+    import hashlib
+    def read_stage(name):
+        from .pipeline_store import fingerprint
+        record = stages[name]
+        path = (directory(identifier) / record['output']).resolve()
+        if not path.is_relative_to(directory(identifier)):
+            raise HTTPException(409, '阶段底稿路径异常')
+        value = json.loads(path.read_text(encoding='utf-8'))
+        if fingerprint(value) != record['output_hash']:
+            raise HTTPException(409, '阶段底稿哈希校验失败')
+        return value
+    wu = read_stage('wu_evaluation')
+    v19 = read_stage('v19_evaluation')
+    assessment = wu.get('assessment') or {}
+    result = v19.get('result') or {}
+    run = result.get('project_synthesis') or result.get('project') or {}
+    levels = {
+        'management_level': (assessment.get('level_name') or assessment.get('level')),
+        'dimension_level': (run.get('impact_level') or {}).get('level') if isinstance(run.get('impact_level'), dict) else None,
+        'scope_level': (run.get('scope_impact_level') or {}).get('level') if isinstance(run.get('scope_impact_level'), dict) else None,
+    }
+    return {
+        'evaluation_name': '双层影响力评价',
+        'rubric_version': 'unified-double-layer-impact.v1',
+        'pipeline_id': str(identifier), 'pipeline_status': state['status'],
+        'review_status': 'draft', 'levels': levels,
+        'management_layer': {'rubric_id': wu.get('rubric_id'), 'assessment': assessment},
+        'dimension_layer': {'rubric_id': v19.get('rubric_id'), 'result': result},
+        'rule': '两层共用L1-L6语义，证据独立保存；等级不相加、不平均，差异交管理员审核。',
+    }
+
+
 @app.middleware('http')
 async def protect_origin(request: Request, call_next):
     if request.method not in ('GET', 'HEAD', 'OPTIONS'):

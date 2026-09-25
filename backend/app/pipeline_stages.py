@@ -65,7 +65,7 @@ def wu_evaluation_stage(inputs,outputs,folder):
         'A G grade requires affirmative evidence for that grade. No external recognition/adoption evidence does NOT establish G1: '
         'use grade=null and record the gap when a dimension lacks affirmative support; an empty evidence_ids list requires grade=null. '
         'Preserve material IDs and exact quotes; do not call the attribution output an original project document. '
-        'Use only Wu v2 G/L criteria; output the full Wu assessment separately from v19. Missing evidence must remain gaps.',inline_input=True)
+        'Use the unified L1-L6 meanings in the supplied evaluation rules. Output the management assessment for the unified double-layer evaluation; D1-D7 are evaluated by the later v19 layer. Missing evidence must remain gaps.',inline_input=True)
     contract.validate_materials(assessment,inputs['materials'],inputs.get('confirmed_scope',''))
     if assessment.outcome_resolution.canonical_name!=intake['intake']['canonical_name']:
         raise ValueError('吴老师评价阶段改变了已冻结成果范围')
