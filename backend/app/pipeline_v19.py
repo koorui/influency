@@ -5,6 +5,7 @@ import json
 from types import SimpleNamespace
 from .pipeline_stages import SKILLS
 from .pipeline_store import WaitingForInput,atomic_json
+from .unified_evaluation import combine_evaluations
 
 
 def wrapper():
