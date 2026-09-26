@@ -16,7 +16,7 @@ CONFIRMATION_METHODS = {
     "领域专家专业判断": "领域专家",
     "成果粒度或映射确认": "Step 3成果凝练组",
 }
-COLLABORATION_STATES = ["只有设计关系", "发生真实输入输出", "形成跨课题任务链", "形成反馈闭环", "持续重复运行", "待核验"]
+COLLABORATION_STATES = ["只有设计关系", "发生真实输入输出", "形成跨课题任务链", "形成反馈闭环", "持续重复运行", "本轮未体现"]
 
 CLASSIFICATION_POLICY = {
     "positions": OUTCOME_POSITIONS,
@@ -28,7 +28,7 @@ PROJECT_AGGREGATION_POLICY = {
     "innovation": "D1–D2以经系统判断的核心成果牵引，列明项目期新增、同期同口径最佳方法比较、AI实际贡献；没有确认核心成果时保留待判断，不为了汇总强行选核心。",
     "impact": "D3–D7以核心成果为主，按维度纳入其他真正产生影响的成果；数据库等关键支撑即使不是核心创新，有独立真实复用也进入D4。",
     "scope": "每个D列出涉及成果ID、纳入理由、覆盖度、深度和集中度；共享来源、同一团队或事件去重，父子成果不重复统计。单任务优势不得扩大为项目整体领先。",
-    "summary": "先给明确判断，再给2–4个有解释力的事实；不足2条按实有展示。创新分项目期新增、同期比较、AI贡献；影响分学术与开放复用、真实应用、浦江主线、外部专业认可与领域影响四类。",
+    "summary": "先给明确判断，再给2–4个有解释力的事实；不足2条按实有展示。创新分项目期新增、同期比较、AI贡献；影响分学术与开放复用、真实应用、项目主线、外部专业认可与领域影响四类。",
 }
 EVIDENCE_ORGANIZATION = {
     "schema_version": "indicator-evidence-organization.v1",
@@ -48,7 +48,7 @@ COLLABORATION_POLICY = {
     "states": COLLABORATION_STATES,
     "rule": "先从任务书还原应有关系，再核查实际输入输出，依次判断任务链、反馈闭环、持续重复运行；采用证据能支持的最高阶段。任务书设计不证明协同发生，一次运行不证明持续闭环。",
     "chain_fields": ["提供课题", "使用课题", "交付对象", "实际任务", "产生结果", "接口或调用日志", "反馈记录", "重复运行时段与次数"],
-    "boundary": "项目内部课题协同独立判断，浦江国家实验室AI4S主线正式集成只进入D6。集成课题可能协调多个节点，不能强画成最后一个串行节点。",
+    "boundary": "项目内部课题协同独立判断，项目或组织主线正式集成只进入D6。集成课题可能协调多个节点，不能强画成最后一个串行节点。",
 }
 REVIEW_POLICY = {
     "evaluation_state": "系统独立评测 · 专家校准前",
@@ -63,7 +63,7 @@ DIMENSION_OBSERVABLES = {
     "D3": ["去重后的独立学术响应数", "独立团队数", "实质跟进、复现与使用深度"],
     "D4": ["项目侧注册/活跃/测试规模", "独立团队真实运行", "复现与二次开发"],
     "D5": ["真实科研或工程任务", "使用案例及独立团队", "效果对照与持续时间"],
-    "D6": ["浦江侧正式接入记录", "实际调用次数与任务", "运行时段与维护责任"],
+    "D6": ["平台或流程侧正式接入记录", "实际调用次数与任务", "运行时段与维护责任"],
     "D7": ["标准或规范采纳", "独立专业评价和机构采用", "公开专业讨论、质疑及争议的方向"],
 }
 
@@ -74,16 +74,10 @@ G_LEVEL_CRITERIA = {
     "D4": ["尚不可获得", "已经公开或可申请获得", "有独立团队成功复用", "形成持续复用和开发群体", "成为广泛依赖的开放基础设施"],
     "D5": ["尚未进入真实任务", "在项目内部真实任务中使用", "独立外部团队实际使用", "多家单位持续用于专业工作", "成为多个领域的常规能力"],
     "D6": ["单点成果", "接入项目内部流程", "与多环节或外部流程协同", "成为稳定平台或主线能力", "成为跨平台、跨领域基础能力"],
-    "D7": ["主要为项目方自述", "形成正式论文、专利或测试结果", "获得独立同行的实质评价", "获得高层次采纳、标准或权威认可", "形成跨领域广泛共识"],
+    "D7": ["主要为项目方自述", "取得独立第三方的具体评测或专业评价", "获得独立同行实质采用或多项认可", "获得高层次采纳、标准或权威认可", "形成跨领域广泛共识"],
 }
-L_LEVEL_CRITERIA = {
-    "L1": "成果形成与验证：成果边界清楚，完成关键功能、性能或实验验证，但尚未证明在真实任务中产生实际作用。",
-    "L2": "局部作用验证：在研发团队或本单位真实任务中产生可核验作用，尚无明确外部影响。",
-    "L3": "外部应用验证：至少有独立外部主体真实使用，能够核实用途和成效。",
-    "L4": "专业方向显著影响：在明确专业方向被多支独立团队持续采用，并支撑可识别的后续成果。",
-    "L5": "领域基础能力：在一个领域的多个方向被广泛、持续采用，成为重要工具、数据资源或基础设施。",
-    "L6": "重大引领影响：在重要领域形成突破性能力，被广泛、持续采用，并显著改变相关研究或工作方式。",
-}
+from .grading_standard import L_LEVEL_CRITERIA
+
 
 # Appended after each task's base prompt so the same schema reaches the actual
 # model call, the normalizer, and the public product.
@@ -117,8 +111,8 @@ PROJECT_OUTPUT_REQUIREMENTS = """
 dimension_portfolio中每个D除coverage/depth/concentration，增加conclusion、included_outcomes（[{outcome_id,reason}]）、key_facts和confirmation_requests。
 key_facts沿用输入中的结构化事实（fact、source_ids、source_type、supports、does_not_prove、effect、direction、outcome_ids、time_scope、quantity），最多4条；完整依据引用原有成果维度，不编新事实或来源。
 增加"innovation_summary":{"project_increment":"本期新增判断","contemporary_comparison":"同期同口径比较","ai_contribution":"AI实际贡献"}，
-"influence_summary":{"academic_and_reuse":"学术与开放复用","real_application":"真实应用","pujiang_integration":"浦江主线","professional_response":"外部专业认可与领域影响，区分方向"}。
-system_collaboration.status只能是只有设计关系、发生真实输入输出、形成跨课题任务链、形成反馈闭环、持续重复运行、待核验；增加design_basis（任务书设计来源）和chains：
+"influence_summary":{"academic_and_reuse":"学术与开放复用","real_application":"真实应用","pujiang_integration":"项目主线","professional_response":"外部专业认可与领域影响，区分方向"}。
+system_collaboration.status只能是只有设计关系、发生真实输入输出、形成跨课题任务链、形成反馈闭环、持续重复运行、本轮未体现；增加design_basis（任务书设计来源）和chains：
 [{provider,consumer,artifact,task,result,source_ids,invocation_source_ids,feedback_source_ids,repeat_source_ids}]。
 提供方/使用方是实际课题名；设计来源不是调用证据；没有实际输入输出记录不能高于只有设计关系，反馈和持续运行分别需要独立记录。
 协同原始材料中的历史专家意见、专业复核问题及示例不得作为结论；系统先独立评测，专家后校准。

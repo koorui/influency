@@ -4,7 +4,7 @@ import sys
 from datetime import date
 from .search_skill_loader import contract,SEARCH_SKILL_ROOT
 from .pipeline_model import execute_json_stage
-from .pipeline_store import WaitingForInput,atomic_json,fingerprint
+from .pipeline_store import WaitingForInput,atomic_json
 from .pipeline_search_collection import collect_for_stage,validate_collected_result,analysis_model,with_actual_queries,excerpt_bank
 
 
@@ -15,7 +15,10 @@ def live_search_stage(inputs,outputs,folder):
         raise WaitingForInput('联网Search前需提供项目启动日期、评审截止日及其来源，不能用今天替代')
     payload={'project_id':scope['project_id'],'outcome_id':scope['outcome_id'],**boundary,
              'search_date':date.today().isoformat(),'intake':scope['intake'],'project_evidence':scope['attribution_preparation']['evidence']}
-    collected=collect_for_stage(payload,folder)
+    from .material_context import relevant_context
+    payload['original_source_context']=relevant_context(inputs['materials'],[scope['intake']['canonical_name'],inputs.get('title','')])
+    from .pipeline_native_search import collect_cli_research
+    collected=collect_cli_research(payload,inputs['materials'],folder)
     return assess_collected_search(scope,boundary,payload,collected,folder)
 
 
@@ -24,13 +27,16 @@ def assess_collected_search(scope,boundary,payload,collected,folder):
     model_collected={k:v for k,v in collected.items() if k!='primary_source_texts'}
     model_collected['primary_source_excerpts']=bank
     result_model=analysis_model([c['id'] for c in scope['intake']['claims']],[c['id'] for c in collected['search']['candidates']],[e['id'] for e in bank])
-    analysis=execute_json_stage(folder,result_model,{**payload,'collected':model_collected},
-        'Assess the five Search modules using this run\'s program-collected public queries and archived source texts. '
-        'Do not perform network or shell requests. Actual requests are in collected.search.queries; the program attaches the complete query log itself. '
+    instruction=('Assess the five Search modules using this run\'s CLI-collected public queries and archived source texts. '
+        'Do not perform additional network requests in this synthesis phase. Read local input.json with Python/shell as needed. '
+        'Actual requests are in collected.search.queries; the program attaches the complete query log itself. '
         'Return research analysis only, without transcribing query logs. Every check evidence_id must appear in your sources list. '
         'Source IDs and URLs must match collected.search.candidates exactly. A source may inform a module different from its query module. '
         'Never use project material IDs as external source IDs: checks may cite only IDs in your sources list. '
         'Full_text requires actual primary_source_excerpts containing article or repository body, not a challenge, abstract or login page. '
+        'Use publisher publication_dates in collected receipts when available. Publication date can date a technical paper, not an adoption event. '
+        'For prior_work/sota, a readable dated paper can establish technical background even when experiment event_date is unknown. '
+        'An exact cited base-model paper is related prior work, not proof that this downstream probe was independently used or recognized. '
         'Choose quote_ref from the provided excerpt IDs belonging to this source; the program copies that exact passage. Never compose quotations yourself. '
         'Use null quote_ref when no primary text is available, retaining metadata_only or blocked status. '
         'Populate research_records for the original workflow tables whenever archived sources or project claims supply relevant facts. '
@@ -43,9 +49,10 @@ def assess_collected_search(scope,boundary,payload,collected,folder):
         'Respect the supplied review cutoff, claim IDs, project and outcome. Do not reuse historical evaluation answers. '
         'Record blocked sources honestly and distinguish author/partner claims from independent evidence. '
         'Unknown dates must be null. Every module needs actual query logs or a blocked status. '
-        'Do not execute repository code. Return all five modules; incomplete evidence means partial or blocked, not invented support.',
-        skill_root=SEARCH_SKILL_ROOT,timeout=900,live_search=False,inline_input=True)
-    return finalize_collected_search(scope,boundary,payload,collected,folder,analysis)
+        'Do not execute repository code. Return all five modules; incomplete evidence means partial or blocked, not invented support.')
+    from .pipeline_search_repair import assess_with_repair
+    return assess_with_repair(folder,result_model,{**payload,'collected':model_collected},instruction,
+        lambda analysis:finalize_collected_search(scope,boundary,payload,collected,folder,analysis))
 
 
 def finalize_collected_search(scope,boundary,payload,collected,folder,analysis):
@@ -76,5 +83,14 @@ def finalize_collected_search(scope,boundary,payload,collected,folder,analysis):
     handoff={'schema_version':'search-replay.v1','mode':'live_search','project_id':scope['project_id'],'outcome_id':scope['outcome_id'],
              'original_run_id':folder.name,'original_completed_at':result.search_date.isoformat(),
              'source_label':'单良Search规范：实际公开检索，经时间审计过滤','evidence':evidence,'findings':findings}
-    return {'replay':handoff,'source_hash':fingerprint(handoff),'fresh_search_executed':True,'time_audit':audited,
+    summary={'mode':'cli_native_web_search','native_web_calls':collected.get('native_web_calls',0),
+             'requests':len(collected['search']['queries']),
+             'successful_search_requests':sum(q.get('status')=='response_received' for q in collected['search']['queries']),
+             'candidates':len(collected['search']['candidates']),
+             'opened_sources':len(collected['primary_source_receipts']['sources']),
+             'readable_sources':sum(bool(r.get('body_usable')) for r in collected['primary_source_receipts']['sources']),
+             'eligible_sources':len(evidence),
+             'note':'请求成功、取得正文和取得可支持具体结论的证据是三个不同结果。'}
+    atomic_json(folder/'execution-summary.json',summary)
+    return {'replay':handoff,'fresh_search_executed':True,'time_audit':audited,'execution_summary':summary,
             'raw_result':result.model_dump(mode='json')}

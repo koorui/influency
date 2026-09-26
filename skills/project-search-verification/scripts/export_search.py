@@ -41,12 +41,17 @@ def export(result:SearchResult,output:Path,collection_root:Path|None=None,contex
         query_path=collection_root/'public-search/receipts.json'
         if primary_path.exists():primary={r['id']:r for r in json.loads(primary_path.read_text(encoding='utf-8'))['sources']}
         if query_path.exists():queries={r['id']:r for r in json.loads(query_path.read_text(encoding='utf-8'))['queries']}
+        for name,key,target in [('primary-sources-recovery','sources',primary),('public-search-recovery','queries',queries)]:
+            path=collection_root/name/'receipts.json'
+            if path.exists():target.update({r['id']:{**r,'archive_directory':name} for r in json.loads(path.read_text(encoding='utf-8'))[key]})
     for source in sources:
         paths=[]
         receipt=primary.get(source['id'],{})
         query=queries.get(source['id'].split('-S')[0],{})
         if collection_root is not None:
-            entries=[('primary-sources',receipt.get('raw_file')),('primary-sources',receipt.get('text_file')),('public-search',query.get('file'))]
+            entries=[(receipt.get('archive_directory','primary-sources'),receipt.get('raw_file')),
+                     (receipt.get('archive_directory','primary-sources'),receipt.get('text_file')),
+                     (query.get('archive_directory','public-search'),query.get('file'))]
             for parent,name in entries:
                 if not name:continue
                 root=(collection_root/parent).resolve();original=(root/name).resolve()

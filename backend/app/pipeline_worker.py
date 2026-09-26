@@ -30,8 +30,14 @@ def run_once():
         job=db.get(PipelineJob,id)
         ticket=db.get(Ticket,job.ticket_id) if job and job.ticket_id else None
         if ticket and ticket.status=='processing':
-            ticket.note={'waiting':'评测需要补充材料或确认范围，管理员正在处理。','failed':'评测执行失败，管理员将查看底稿并处理。','succeeded':'评测已完成，等待管理员审核发布。'}.get(status,'评价工作流处理中。')
-            if status=='succeeded':ticket.status='review'
+            ticket.note={'waiting':'等待管理员补充材料或确认范围','failed':'处理异常，等待管理员处理','succeeded':'正在生成报告'}.get(status,'评价工作流处理中')
+        if job and status=='succeeded':
+            from .project_service import deliver_report
+            try:deliver_report(db,job)
+            except Exception as exc:
+                log.exception('Report delivery failed: %s',id)
+                job.status='failed';job.error='报告生成失败：'+str(exc)[:1800]
+                if ticket:ticket.note='报告生成异常，等待管理员处理'
         db.commit()
     return True
 

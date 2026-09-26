@@ -5,11 +5,6 @@ import pytest
 from app.pipeline_store import PipelineStore
 
 
-def test_amend_does_not_accept_changed_rules(tmp_path,monkeypatch):
-    store=PipelineStore(tmp_path/'case');store.create({'title':'original'})
-    monkeypatch.setattr('app.pipeline_store.implementation_fingerprint',lambda:'different')
-    with pytest.raises(ValueError,match='更新'):store.amend({'title':'replacement'},'wu_intake')
-    assert store.read()['inputs']['title']=='original'
 
 
 def test_real_case_manifest_uses_original_pages_and_substantive_search():

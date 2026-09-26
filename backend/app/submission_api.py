@@ -1,6 +1,5 @@
 """Fixed representative-outcome form, stored verbatim as project self-report."""
 from datetime import date
-import hashlib
 import json
 from pathlib import Path
 from typing import Literal
@@ -99,7 +98,7 @@ def submit(body: SubmissionInput, db: Session = Depends(get_db), user: User = De
         db.flush()
         path.write_bytes(content)
         material = Material(filename=body.outcome_name[:180] + '-代表性成果信息表.md', storage_key=path.name,
-                            sha256=hashlib.sha256(content).hexdigest(), size=len(content), text=text, uploaded_by=user.id)
+                            size=len(content), text=text, uploaded_by=user.id)
         db.add(material)
         db.flush()
         row = OutcomeSubmission(ticket_id=ticket.id, created_by=user.id, request_key=str(body.request_key),

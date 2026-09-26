@@ -164,8 +164,8 @@ class Assessment(Strict):
             if reason.kind == 'support' and not reason.evidence_ids:
                 raise ValueError('正向理由必须引用证据')
         for dimension in self.dimensions:
-            if dimension.grade and not dimension.evidence_ids:
-                raise ValueError('G级须引用证据，不得因缺失默认G1')
+            if dimension.grade and not dimension.evidence_ids and not (dimension.grade=='G1' and dimension.gaps):
+                raise ValueError('G2及以上须引用证据；G1缺少引文时须说明本轮证据边界')
         if self.current_level is not None:
             if self.evaluation_status != 'formal' or self.level_name != LEVELS[self.current_level-1]:
                 raise ValueError('只有 formal 状态可给出正式等级，名称须匹配吴老师v2口径')
@@ -206,6 +206,24 @@ def validate_materials(assessment: Assessment, materials: list[dict], confirmed_
             locations = {(e.material_id,e.locator,e.quote) for e in assessment.evidence_index if e.kind=='project' and e.id in r.source_refs}
             if len(locations) < 2 and confirmed_scope.strip() != r.canonical_name:
                 raise ValueError('自动确认需要至少两处项目原始依据')
+
+
+def validate_completed_assessment(assessment):
+    if assessment.evaluation_status!='formal' or assessment.current_level is None:
+        raise ValueError('完成评价须按现有证据给出明确L级，证据局限写入判断边界')
+    if any(d.grade is None for d in assessment.dimensions):
+        raise ValueError('完成评价须给出全部七维G级，不能以待核验代替结论')
+
+
+class FinalDimension(Dimension):
+    grade: Literal['G1','G2','G3','G4','G5']
+
+
+class FinalAssessment(Assessment):
+    evaluation_status: Literal['formal']
+    current_level: int = Field(ge=1,le=6)
+    level_name: str
+    dimensions: list[FinalDimension]
 
 
 def cli_schema():

@@ -14,3 +14,5 @@
 - next_tasks包含project_material和expert_review，可为null；非空则包含title、summary、body。body是可直接编辑复制的收件对象任务文案，不声称已发送。
 
 截图非必需。本版以文字摘录与页码/位置保留原始依据，不伪造截图；外部URL可在报告点击，正式上线前需人工确认链接与事实对应。
+
+当前已定位成果的评价完成契约：evaluation_status=formal，current_level为1–6，七维grade均为G1–G5。输入身份仍可先澄清；已完成的报告不能以初步评价或空等级发布。

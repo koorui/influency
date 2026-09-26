@@ -1,6 +1,5 @@
 """Portable wrapper around the unchanged delivered v19 engine."""
 import argparse
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -71,7 +70,15 @@ def validate_result(result):
     if run.get('expected_call_count')!=expected or run.get('completed_call_count')!=expected:errors.append('Logical calls incomplete or inconsistent')
     def level(obj,key,prefix,max_level,label):
         val=(obj.get(key) or {}).get('level')
-        if val not in ['待确认',*[f'{prefix}{i}' for i in range(1,max_level+1)]]:errors.append(f'{label}: missing/invalid {key}.level')
+        if val not in [f'{prefix}{i}' for i in range(1,max_level+1)]:errors.append(f'{label}: missing/invalid {key}.level')
+    def pending_verdicts(node):
+        if isinstance(node,dict):
+            for key,value in node.items():
+                if key in ('status','level') and isinstance(value,str) and value in ('待核验','待确认','初步评价'):
+                    errors.append('Completed report contains a pending verdict')
+                pending_verdicts(value)
+        elif isinstance(node,list):
+            for value in node:pending_verdicts(value)
     for outcome in outcomes:
         label=outcome.get('outcome_id','unknown')
         dims=outcome.get('dimensions') or []
@@ -79,6 +86,8 @@ def validate_result(result):
         for d in dims:level(d,'grade','G',5,f'{label}/{d.get("dimension_id")}')
         level(outcome.get('synthesis') or {},'impact_level','L',6,label)
     level(result.get('project_synthesis') or {},'scope_impact_level','L',6,'project scope')
+    for outcome in outcomes:pending_verdicts(outcome)
+    pending_verdicts(result.get('project_synthesis') or {})
     return {'valid':not errors,'errors':errors,'standard_version':STANDARD,'note':'Structure only; scientific conclusions still require review.'}
 
 
@@ -115,8 +124,6 @@ def run(args):
     args.output_dir=output
     write(output/'preflight.json',report)
     manifest={'standard_version':STANDARD,'model':provider_environment['V19_MODEL'],'base_url':provider_environment['V19_BASE_URL'],
-        'workspace_sha256':hashlib.sha256(args.workspace.read_bytes()).hexdigest(),
-        'source_manifest_sha256':hashlib.sha256((ROOT/'assets/source-manifest.json').read_bytes()).hexdigest(),
         'expected_logical_calls':report['expected_logical_calls'],'status':'running'}
     write(output/'run-manifest.json',manifest)
     command=[sys.executable,str(Path(__file__).resolve()),'_engine','--workspace',str(args.workspace.resolve()),'--output-dir',str(output),'--request-timeout',str(args.request_timeout),'--parallelism',str(args.parallelism)]

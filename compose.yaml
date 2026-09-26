@@ -1,65 +1,118 @@
+name: zhiheng-impact
+
+x-backend: &backend
+  image: zhiheng-impact-backend:local
+  build:
+    context: .
+    dockerfile: backend/Dockerfile
+    args:
+      CODEX_VERSION: ${CODEX_VERSION:-0.156.1}
+  init: true
+  environment: &backend-env
+    DATABASE_URL: mysql+pymysql://impact:${MYSQL_PASSWORD:?Set MYSQL_PASSWORD}@mysql:3306/impact?charset=utf8mb4
+    SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY}
+    STORAGE_DIR: /data/materials
+    EVALUATION_ADAPTER: codex
+    ALLOWED_ORIGIN: ${DEPLOY_ORIGIN:-http://localhost:18080}
+    COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    CODEX_BINARY: /usr/local/bin/codex
+    CODEX_HOME: /home/app/.codex
+    CODEX_MODEL: ${CODEX_MODEL:-gpt-6-astra}
+    CODEX_REASONING_EFFORT: ${CODEX_REASONING_EFFORT:-high}
+    CODEX_TIMEOUT_SECONDS: 900
+    CODEX_MAX_INPUT_CHARS: 2000000
+    TASK_TIMEOUT_SECONDS: 1200
+    V19_TRANSPORT: codex
+  volumes:
+    - materials:/data/materials
+
 services:
   mysql:
     image: mysql:8.0.46
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: impact
       MYSQL_USER: impact
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD}
     command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci"]
-    ports: ["127.0.0.1:13307:3306"]
-    volumes: ["mysql_data:/var/lib/mysql"]
+    volumes:
+      - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root --password=$$MYSQL_ROOT_PASSWORD --silent"]
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_PASSWORD mysql --protocol=TCP -h 127.0.0.1 -u impact impact -e 'SELECT 1'"]
       interval: 5s
       timeout: 5s
-      retries: 30
+      retries: 40
+      start_period: 30s
     restart: unless-stopped
+
   migrate:
-    build: ./backend
-    environment: &backend-env
-      DATABASE_URL: mysql+pymysql://impact:${MYSQL_PASSWORD}@mysql:3306/impact?charset=utf8mb4
-      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in .env}
-      STORAGE_DIR: /data/materials
-      EVALUATION_ADAPTER: ${EVALUATION_ADAPTER:-mock}
-      ALLOWED_ORIGIN: ${DEPLOY_ORIGIN:-http://localhost:18080}
-      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    <<: *backend
     depends_on:
-      mysql: {condition: service_healthy}
+      mysql:
+        condition: service_healthy
     command: ["alembic", "upgrade", "head"]
+
+  bootstrap:
+    <<: *backend
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    volumes:
+      - materials:/data/materials
+      - ./.deploy-state:/migration:ro
+    command: ["python", "-m", "app.deployment_bootstrap"]
+
   api:
-    build: ./backend
-    environment: *backend-env
+    <<: *backend
     depends_on:
-      migrate: {condition: service_completed_successfully}
-    volumes: ["materials:/data/materials", "./skills:/skills:ro"]
+      bootstrap:
+        condition: service_completed_successfully
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=5)"]
+      interval: 10s
+      timeout: 8s
+      retries: 12
+      start_period: 15s
     restart: unless-stopped
-  worker:
-    build: ./backend
-    environment: *backend-env
-    depends_on:
-      migrate: {condition: service_completed_successfully}
-    volumes: ["materials:/data/materials", "./skills:/skills:ro"]
-    command: ["python", "-m", "app.worker"]
-    restart: unless-stopped
-  web:
-    build: ./frontend
-    ports: ["127.0.0.1:18080:80"]
-    depends_on: [api]
-    restart: unless-stopped
+
   pipeline-worker:
-    build: ./backend
+    <<: *backend
     environment:
       <<: *backend-env
-      V19_API_KEY: ${V19_API_KEY:-}
-      V19_BASE_URL: ${V19_BASE_URL:-}
-      V19_MODEL: ${V19_MODEL:-}
+      CODEX_SANDBOX_MODE: danger-full-access
     depends_on:
-      migrate: {condition: service_completed_successfully}
-    volumes: ["materials:/data/materials", "./skills:/skills:ro"]
+      api:
+        condition: service_healthy
+    volumes:
+      - materials:/data/materials
+      - codex_pipeline:/home/app/.codex
+    secrets: [relay_config, relay_auth]
     command: ["python", "-m", "app.pipeline_worker"]
     restart: unless-stopped
+
+  web:
+    image: zhiheng-impact-web:local
+    build: ./frontend
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-18080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/api/health"]
+      interval: 10s
+      timeout: 8s
+      retries: 12
+    restart: unless-stopped
+
+secrets:
+  relay_config:
+    file: ./.deploy-secrets/relay-config.toml
+  relay_auth:
+    file: ./.deploy-secrets/relay-auth.json
+
 volumes:
   mysql_data:
   materials:
+  codex_pipeline:

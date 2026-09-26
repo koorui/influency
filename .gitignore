@@ -11,3 +11,7 @@ playwright-report/
 *.log
 .local-access.md
 *.tsbuildinfo
+.env.docker
+.deploy-secrets/
+.deploy-state/
+.local-runtime/

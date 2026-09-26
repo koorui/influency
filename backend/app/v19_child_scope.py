@@ -2,7 +2,6 @@
 All evidence routes are explicit caller-reviewed IDs, never keyword matching.
 """
 import copy
-from .pipeline_store import fingerprint
 
 
 def child_workspace(delivery,intake,replay,attribution,*,child_id,routes,review_note):
@@ -59,9 +58,9 @@ def child_workspace(delivery,intake,replay,attribution,*,child_id,routes,review_
         'evidence_adapter':{'schema_version':'pipeline-child-evidence.v1','professional_metric_bindings':bindings,
             'outcome_packets':{child_id:{'source_card':card,'dimensions':dimensions}},
             'channel_status':{'internal_search':{'status':'not_delivered'}},
-            'governance':{'source_delivery_hash':fingerprint(delivery),'parent_evidence_inherited':False,'review_note':review_note}},
+            'governance':{'parent_evidence_inherited':False,'review_note':review_note}},
         'available_search':{'external_group':{'status':'loaded','claim_count':len(replay['evidence'])}},
         'contribution_attribution':{},'evidence_repository':{},
         'pipeline_provenance':{'local_outcome_id':local_id,'frozen_child_id':child_id,'parent_id':parent['outcome_id'],
-            'intake_hash':fingerprint(intake),'search_hash':fingerprint(replay),'attribution_hash':fingerprint(attribution),
+
             'wu_evaluation_used':False,'historical_replay':replay.get('mode','historical_replay')=='historical_replay'}}

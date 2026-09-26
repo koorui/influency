@@ -34,7 +34,7 @@ PUBLIC_NARRATIVE_REQUIREMENTS = """
 【面向使用者的中文叙述规范】
 JSON键名和编号仅供程序解析；所有会展示给使用者的文字值必须写成自然、完整、可直接阅读的中文，包括原因、结论、分析、摘要、事实、反证、缺口、不确定性和管理建议。
 1. 禁止在文字值中复述任何内部字段名、数据库键名或英文枚举，例如 contribution_attribution、human_intervention_risk、data_platform_confounding_risk、claim_evidence、source_gap、time_role、metric_id、outcome_id、current_level、evidence_confidence、judgment_confidence。
-2. 禁止使用“字段名为‘值’”“某记录显示某键为某枚举”这类技术描述。应直接翻译业务含义，例如写“人工干预风险尚待核验，数据与平台因素可能造成中等程度的混杂”，不得写原始字段名。
+2. 禁止使用“字段名为‘值’”“某记录显示某键为某枚举”这类技术描述。应直接翻译业务含义，例如写“人工干预风险尚本轮未体现，数据与平台因素可能造成中等程度的混杂”，不得写原始字段名。
 3. 禁止在叙述中出现内部编号和来源编号，例如 IQ、D、G、P、OUT、EXT、EVD、SRC、DECL、SIM、EXP、L1—L4及其带数字或连字符的变体。需要引用时使用中文名称，例如“人工智能实质贡献度”“技术性能与任务表现”“成果综合等级”“项目综合层级”“外部核验记录”。编号只允许放在JSON专用ID字段或source_ids数组中。
 4. 禁止输出 Level 1、Level 2、high、medium、low、core、decisive、corroborative、not_primary 等英文等级或角色；分别写成“1级、2级”“高、中、低”“核心依据、决定性依据、校验性依据、非主要依据”。
 5. E_conf和J_conf只作为内部键存在，公开文字中分别称为“证据可信度”和“判断把握度”。不得把二者写成统计概率或置信区间。
@@ -45,20 +45,20 @@ JSON键名和编号仅供程序解析；所有会展示给使用者的文字值�
 EVALUATION_STANDARD_VERSION = "outcome-d1-d7-evaluation.v19"
 
 D_DIMENSION_SYSTEM_PROMPT = """你是重大科研项目创新影响力评价专家。本次只评价一项Step 3冻结成果的一个D维度。
-当前正式指标由 active_indicator_criteria 提供。先按成果类型判断适用性，再用所需材料核验；新增指标不代表已有依据，缺材料必须待核验。历史材料中的旧数量目标、规模标签和被移除指标不能作为现行评价标准。下级指标只细化三个分支，不按条数加权或增设总分。
+当前正式指标由 active_indicator_criteria 提供。先按成果类型判断适用性，再用所需材料核验；新增指标不代表已有依据，缺材料必须本轮未体现。历史材料中的旧数量目标、规模标签和被移除指标不能作为现行评价标准。下级指标只细化三个分支，不按条数加权或增设总分。
 评价对象及父子ID已经由Step 3冻结；项目材料、检索核验、AI贡献组件和L2-L4专业事实已经由适配层路由到该成果。你不得合并、拆分、改名或重新凝练成果，不得自行检索或制造上游事实。
-先逐个判断本维度的三个原子分支，再依照本维度输入契约和综合规则形成维度状态。项目方声明与外部事实必须分开；检索事实只能标为支持、限制或反驳，不能直接充当D结论。材料缺失或公开检索未发现只能写“待核验”，不能写成事实不存在。
-严格执行输入中的 agent_execution_protocol 和本维度三组 upstream_component_contract：先按 input_path 找到材料，再逐项核对 package_id、target_branches、required_fields 和 prohibited_use，然后严格依照 agent_use_steps 的顺序执行。每一步只能更新其 writes_to 指定的 JSON 字段；先写原子分支、证据链、支持/反证和缺口，最后才综合维度状态。内部Search组件用于还原项目内部事实与声明，AI贡献组件只用于规定的归因或对象消歧，外部Search组件用于外部核验。某组在本维度标为非主要或无必需组件时，不得强行从该组材料推断结论；不得跨组替代缺失组件。缺少必需字段时，相应原子判断必须保留证据缺口并按规则降为待核验或部分成立。
-D1的核心问题对应只能读取Step 3显式问题链接；若只收到核心问题清单但没有成果—问题映射，D1.1必须待核验，禁止模型按关键词自行匹配。
-D1判断核心问题推进、能力增量和横向先进性；D2判断项目期新增、新增性质和可归因性；D3判断独立学术行为深度；D4判断开放、可用和真实复用；D5分别判断内部真实使用、外部独立使用及效果持续性；D6只判断浦江国家实验室AI4S主线接入、调用和持续运行；D7只接受独立专业主体的评价、认可或采纳。项目内部课题协同不得计入D6，专利、项目方宣传和同源转载不得计入D7。
+先逐个判断本维度的三个原子分支，再依照本维度输入契约和综合规则形成维度状态。项目方声明与外部事实必须分开；检索事实只能标为支持、限制或反驳，不能直接充当D结论。材料缺失或公开检索未发现只能写“本轮未体现”，不能写成事实不存在。
+严格执行输入中的 agent_execution_protocol 和本维度三组 upstream_component_contract：先按 input_path 找到材料，再逐项核对 package_id、target_branches、required_fields 和 prohibited_use，然后严格依照 agent_use_steps 的顺序执行。每一步只能更新其 writes_to 指定的 JSON 字段；先写原子分支、证据链、支持/反证和缺口，最后才综合维度状态。内部Search组件用于还原项目内部事实与声明，AI贡献组件只用于规定的归因或对象消歧，外部Search组件用于外部核验。某组在本维度标为非主要或无必需组件时，不得强行从该组材料推断结论；不得跨组替代缺失组件。缺少必需字段时，相应原子判断必须保留证据缺口并按规则降为本轮未体现或部分成立。
+D1的核心问题对应只能读取Step 3显式问题链接；若只收到核心问题清单但没有成果—问题映射，D1.1必须本轮未体现，禁止模型按关键词自行匹配。
+D1判断核心问题推进、能力增量和横向先进性；D2判断项目期新增、新增性质和可归因性；D3判断独立学术行为深度；D4判断开放、可用和真实复用；D5分别判断内部真实使用、外部独立使用及效果持续性；D6只判断项目或组织主线接入、调用和持续运行；D7只接受独立专业主体的评价、认可或采纳。项目内部课题协同不得计入D6，专利、项目方宣传和同源转载不得计入D7。
 AI归因贯穿D1、D2和D5的相应事实链，必须区分AI、数据、算力、自动化、设备、领域知识、传统方法和人工的作用，但不得作为等权独立分数。L2-L4只作为专业事实，不得读取其历史等级、另行评分或按数量赋权。
 区分当前节点之前的基础、当前评价窗口内的新增和当前节点之后的影响；后续影响不得反证项目期当时领先。
-不打分、不计算平均值、不输出成果G级。状态只允许“明确成立、部分成立、尚未形成、待核验、不适用”；不适用必须有明确范围依据。
+不打分、不计算平均值、不输出成果G级。状态只允许“明确成立、部分成立、尚未形成、本轮未体现、不适用”；不适用必须有明确范围依据。
 专家只处理项目材料和检索都无法解决、且会改变当前判断的专业争议；不得让专家重复评价所有分支。
 只输出JSON对象：
 {
-  "status":"明确成立|部分成立|尚未形成|待核验|不适用",
-  "branch_judgments":[{"branch_id":"当前分支ID","status":"明确成立|部分成立|尚未形成|待核验|不适用","conclusion":"原子判断","decisive_source_ids":["来源编号"]}],
+  "status":"明确成立|部分成立|尚未形成|本轮未体现|不适用",
+  "branch_judgments":[{"branch_id":"当前分支ID","status":"明确成立|部分成立|尚未形成|本轮未体现|不适用","conclusion":"原子判断","decisive_source_ids":["来源编号"]}],
   "core_position":"核心成果|关键支撑|应用验证|常规交付|前期基础|归属待核|待判断",
   "conclusion":"不超过120字的直接判断",
   "expert_analysis":"完整说明事实、比较、时间归属、反证与结论边界",
@@ -97,13 +97,13 @@ PROJECT_SYNTHESIS_SYSTEM_PROMPT = """你是重大科研项目创新影响力综�
 特定层只归纳D1、D2以及D5中的项目内部真实使用和效果，回答项目自己的核心问题解决得怎样；全局层只归纳D3、D4、D6、D7以及D5中的外部独立真实使用，回答成果是否走出去形成更广泛价值。两层不是新指标，不重新打分。
 项目系统性/课题协同单独判断，不并入任何D维度，也不能替代外部扩散和真实影响。不得输出项目总分、平均分、G级或另一套维度。
 项目级每个D都必须输出覆盖度、深度和集中度：覆盖度说明多少冻结主要成果得到有效证据；深度说明最强行为达到哪里；集中度说明证据是否过度集中在单一成果。不得平均，也不得让一个强成果代表全项目。
-层级状态只允许“强、较强、初步形成、尚未形成、待核验”。
+层级状态只允许“强、较强、初步形成、尚未形成、本轮未体现”。
 只输出JSON对象：
 {
   "dimension_portfolio":{"D1":{"coverage":"覆盖情况","depth":"最深证据或行为","concentration":"集中度及边界"},"D2":{},"D3":{},"D4":{},"D5":{},"D6":{},"D7":{}},
-  "specific_layer":{"status":"强|较强|初步形成|尚未形成|待核验","conclusion":"特定层判断","basis":["关键成果与维度依据"],"limitations":["限制"]},
-  "global_layer":{"status":"强|较强|初步形成|尚未形成|待核验","conclusion":"全局层判断","basis":["关键成果与维度依据"],"limitations":["限制"]},
-  "system_collaboration":{"status":"只有设计关系|发生真实输入输出|形成跨课题任务链|形成反馈闭环|持续重复运行|待核验","conclusion":"单独的项目系统性判断","evidence":["协同事实"],"gaps":["缺口"]},
+  "specific_layer":{"status":"强|较强|初步形成|尚未形成|本轮未体现","conclusion":"特定层判断","basis":["关键成果与维度依据"],"limitations":["限制"]},
+  "global_layer":{"status":"强|较强|初步形成|尚未形成|本轮未体现","conclusion":"全局层判断","basis":["关键成果与维度依据"],"limitations":["限制"]},
+  "system_collaboration":{"status":"只有设计关系|发生真实输入输出|形成跨课题任务链|形成反馈闭环|持续重复运行|本轮未体现","conclusion":"单独的项目系统性判断","evidence":["协同事实"],"gaps":["缺口"]},
   "overall_judgment":"项目整体创新影响力观点",
   "leading_outcomes":["真正值得重点看的成果"],
   "overclaimed_outcomes":["当前不宜认定为核心的成果及理由"],
@@ -122,18 +122,23 @@ D_DIMENSION_SYSTEM_PROMPT += """
 OUTCOME_SYNTHESIS_SYSTEM_PROMPT += OUTCOME_OUTPUT_REQUIREMENTS
 PROJECT_SYNTHESIS_SYSTEM_PROMPT += PROJECT_OUTPUT_REQUIREMENTS
 D_DIMENSION_SYSTEM_PROMPT += """
-【当前分级口径】本维度另给G1-G5成熟度。依据已核实且适用于本成果的事实，给出能够支撑的最高当前等级；尚待补充的分支、下一等级所需材料分别写入missing_inputs和gap_to_next，不因这些缺口清空已有证据支持的当前等级。仅当连本维度G1的事实门槛也无法确认时填待确认，不因缺证自动判G1。等级须依据本维度grade_criteria、可追溯事实和反证独立说明，不由定性状态机械换算。分级示例仍受本维度现行证据边界约束：D6只以浦江AI4S主线接入、调用和持续运行评定；D7不能仅凭专利、项目方宣传或同源转载升级。
-在JSON中增加"grade":{"level":"G1|G2|G3|G4|G5|待确认","reason":"当前等级的关键事实与边界","source_ids":["本轮输入的来源编号"],"gap_to_next":"进入下一级还缺什么"}。
+【当前分级口径】本维度另给G1-G5成熟度。依据已核实且适用于本成果的事实，给出能够支撑的最高当前等级；尚待补充的分支、下一等级所需材料分别写入missing_inputs和gap_to_next，不因这些缺口清空已有证据支持的当前等级。本轮证据未建立更高成熟度时给G1保守基档，说明材料范围，不把缺证写成现实中的不存在。等级须依据本维度grade_criteria、可追溯事实和反证独立说明，不由定性状态机械换算。分级示例仍受本维度现行证据边界约束：D6只以项目主线接入、调用和持续运行评定；D7不能仅凭专利、项目方宣传或同源转载升级。
+在JSON中增加"grade":{"level":"G1|G2|G3|G4|G5","reason":"当前等级的关键事实与边界","source_ids":["本轮输入的来源编号"],"gap_to_next":"进入下一级还缺什么"}。
 """
 OUTCOME_SYNTHESIS_SYSTEM_PROMPT += """
-【成果整体影响分级】阅读七维G级和实际使用、外部独立性、持续性证据，按impact_level_criteria判断L1-L6；不能平均七维G级。L2只需可核验的独立外部实际使用，L3必须同时有多支独立团队在同一专业方向持续采用、形成后续成果的直接证据；单篇预印本、一次评测或多个署名单位参与同一研究都不能代替多团队持续采用。L4另需稳定的平台、工具或能力依赖，不能把L3门槛写成L4缺口。缺少本级关键事实时给出已有证据支持的较低等级；连L1也无法确认才填待确认。
-在JSON中增加"impact_level":{"level":"L1|L2|L3|L4|L5|L6|待确认","reason":"整体影响阶段及关键事实","source_ids":["本轮输入的来源编号"],"gap_to_next":"上一级所需的关键事实"}。
+【成果整体影响分级】依照当前impact_level_criteria从成果形成与验证开始判断L1-L6，不平均七维G级；证据有限时选有依据的较低等级，具体边界另列。
+在JSON中增加"impact_level":{"level":"L1|L2|L3|L4|L5|L6","reason":"整体影响阶段及关键事实","source_ids":["本轮输入的来源编号"],"gap_to_next":"上一级所需的关键事实"}。
 """
 PROJECT_SYNTHESIS_SYSTEM_PROMPT += """
-【本轮评价范围影响分级】仅对输入project.evaluation_scope覆盖的成果给出L1-L6候选判断，不得称为未纳入范围的整个项目等级；不平均成果或七维等级。L3要求多支独立团队在同一专业方向持续采用并形成后续成果，不能因一次外部实际使用或多个合作单位署名就越过L2；L4要求稳定平台或工具依赖。缺少较高等级证据时保留已有证据支持的较低等级；连L1也无法确认才填待确认，保留专家校准前状态。
-在JSON中增加"scope_impact_level":{"level":"L1|L2|L3|L4|L5|L6|待确认","reason":"本轮范围的整体影响判断","source_ids":["本轮输入的来源编号"],"gap_to_next":"上一级所需的关键事实","scope":"本轮实际评价范围"}。
+【本轮评价范围影响分级】按当前六级门槛判断本轮覆盖成果的L1-L6，不扩大为全项目，不平均。
+在JSON中增加"scope_impact_level":{"level":"L1|L2|L3|L4|L5|L6","reason":"本轮范围的整体影响判断","source_ids":["本轮输入的来源编号"],"gap_to_next":"上一级所需的关键事实","scope":"本轮实际评价范围"}。
 """
 
+
+from .grading_standard import FINAL_JUDGMENT_POLICY, VERSION as GRADING_VERSION, apply_current_dimension_scope
+D_DIMENSION_SYSTEM_PROMPT += FINAL_JUDGMENT_POLICY
+OUTCOME_SYNTHESIS_SYSTEM_PROMPT += FINAL_JUDGMENT_POLICY
+PROJECT_SYNTHESIS_SYSTEM_PROMPT += FINAL_JUDGMENT_POLICY
 
 def build_indicator_input_contract(workspace: dict[str, Any]) -> dict[str, Any]:
     framework = workspace.get("evaluation_framework") or {}
@@ -184,7 +189,7 @@ def build_indicator_input_contract(workspace: dict[str, Any]) -> dict[str, Any]:
             int(external.get("claim_count") or 0),
             state=(
                 "已接收" if external.get("status") == "loaded" and int(external_routing_audit.get("unrouted_claim_count") or 0) == 0
-                else "路由待核验" if external.get("status") == "loaded"
+                else "路由本轮未体现" if external.get("status") == "loaded"
                 else "上游未交付"
             ),
             required=False,
@@ -304,12 +309,12 @@ def build_indicator_product(
         })
     project_synthesis = copy.deepcopy(current_run.get("project_synthesis") or {
         "dimension_portfolio": {
-            dimension_id: {"coverage": "待核验", "depth": "待核验", "concentration": "待核验"}
+            dimension_id: {"coverage": "本轮未体现", "depth": "本轮未体现", "concentration": "本轮未体现"}
             for dimension_id in DIMENSION_INPUT_CONTRACTS
         },
-        "specific_layer": {"status": "待核验", "conclusion": "尚未完成D1、D2和目标场景D5的归纳。", "basis": [], "limitations": []},
-        "global_layer": {"status": "待核验", "conclusion": "尚未完成D3、D4、D6、D7及跨场景D5的归纳。", "basis": [], "limitations": []},
-        "system_collaboration": {"status": "待核验", "conclusion": "尚未单独判断项目系统性与课题协同。", "evidence": [], "gaps": []},
+        "specific_layer": {"status": "本轮未体现", "conclusion": "尚未完成D1、D2和目标场景D5的归纳。", "basis": [], "limitations": []},
+        "global_layer": {"status": "本轮未体现", "conclusion": "尚未完成D3、D4、D6、D7及跨场景D5的归纳。", "basis": [], "limitations": []},
+        "system_collaboration": {"status": "本轮未体现", "conclusion": "尚未单独判断项目系统性与课题协同。", "evidence": [], "gaps": []},
         "overall_judgment": "尚未运行评价。",
         "leading_outcomes": [],
         "overclaimed_outcomes": [],
@@ -360,7 +365,7 @@ def build_indicator_product(
             "layer_summary_method": copy.deepcopy(LAYER_SUMMARY_METHOD),
             "professional_metric_policy": "三个项目共用21个D1-D7分支；L2-L4只作分支事实来源，正式链不读取历史等级、不独立评分、不按数量赋权。",
             "ai_contribution_policy": "AI归因贯穿D1、D2和D5的相应事实链，不作为等权独立分数，并与数据、算力、自动化、设备、领域知识、传统方法和人工贡献区分。",
-            "scoring_policy": "直接形成逐维度定性判断，并分别给出G1-G5或待确认；整体影响给出L1-L6或待确认。不计算平均分或总分，等级须有关键事实与边界。",
+            "scoring_policy": "直接形成逐维度定性判断，并分别给出G1-G5；整体影响给出L1-L6。不计算平均分或总分，等级须有关键事实与边界。",
             "evidence_time_roles": copy.deepcopy(EVIDENCE_TIME_ROLES),
             "hard_rules": copy.deepcopy(HARD_RULES),
         },
@@ -581,7 +586,7 @@ class IndicatorEvaluationPipeline:
             "observables": DIMENSION_OBSERVABLES[dimension_id],
             "review_policy": REVIEW_POLICY,
         }
-        payload = _independent_materials(payload)
+        payload = apply_current_dimension_scope(_independent_materials(payload))
         result = self.traced.chat_json(
             D_DIMENSION_SYSTEM_PROMPT,
             json.dumps(payload, ensure_ascii=False),
@@ -600,10 +605,10 @@ class IndicatorEvaluationPipeline:
         if dimension_id == 'D1' and not card.get('problem_ids'):
             for branch in judgment['branch_judgments']:
                 if branch['branch_id'] == 'D1.1':
-                    branch['status'] = '待核验'
+                    branch['status'] = '本轮未体现'
                     branch['conclusion'] = '尚缺主要成果与核心问题的明确对应关系，不能认定核心任务已解决。'
-            if judgment['status'] != '待核验':
-                judgment['status'] = '待核验'
+            if judgment['status'] == '明确成立':
+                judgment['status'] = '部分成立'
                 judgment['conclusion'] = '核心问题对应关系尚缺；性能或边界材料不能替代核心任务解决判断。'
             grade = judgment.get('grade') or {}
             if str(grade.get('level') or '').startswith('G'):
@@ -718,7 +723,7 @@ def _validate_synthesis_sources(synthesis, dimensions):
         synthesis["scope_limitations"].append("综合判断引用了对应维度中未确认来源的材料，需补齐可追溯依据。")
         synthesis["core_position"] = "待判断"
         synthesis["classification_reason"] = "综合判断的决定性依据尚未闭合，暂不确认成果定位。"
-        synthesis["overall_conclusion"] = "综合判断的来源范围尚未闭合，结论待核验。"
+        synthesis["overall_conclusion"] = "综合判断的来源范围尚未闭合，结论本轮未体现。"
     synthesis["decisive_evidence"] = accepted
 
 
@@ -791,7 +796,7 @@ def _validate_fact_scope(judgment: dict[str, Any], evidence: Any, card: dict[str
         if (cited and not cited <= allowed_sources) or (branch.get('status') in {'明确成立','部分成立','尚未形成'} and not cited):
             invalid = True
             branch['decisive_source_ids'] = [sid for sid in branch.get('decisive_source_ids') or [] if sid in allowed_sources]
-            branch['status'] = '待核验'
+            branch['status'] = '本轮未体现'
             branch['conclusion'] = '该分支尚缺可追溯的直接依据，不能形成确定判断。'
     for row in [*(judgment.get("key_facts") or []), *(judgment.get("evidence_chain") or [])]:
         cited = set(row.get("source_ids") or [])
@@ -819,9 +824,9 @@ def _validate_fact_scope(judgment: dict[str, Any], evidence: Any, card: dict[str
             "expected_evidence": "提供可追溯原文及具体成果对应关系", "affected_judgment": "事实支持范围",
             "changes_judgment": True, "professional_dispute": False,
         })
-        judgment["conclusion"] = "关键事实的来源或成果范围尚未闭合，当前判断待核验。"
+        judgment["conclusion"] = "关键事实的来源或成果范围尚未闭合，当前判断本轮未体现。"
         if judgment.get("status") in {"明确成立", "部分成立", "尚未形成"}:
-            judgment["status"] = "待核验"
+            judgment["status"] = "本轮未体现"
 
 
 def _collaboration_chains(value: Any) -> list[dict[str, Any]]:
@@ -831,9 +836,9 @@ def _collaboration_chains(value: Any) -> list[dict[str, Any]]:
 
 
 def _collaboration_status(collaboration: dict[str, Any]) -> tuple[str, bool]:
-    requested = str(collaboration.get("status") or "待核验")
-    if requested not in COLLABORATION_STATES or requested == "待核验":
-        return "待核验", requested != "待核验"
+    requested = str(collaboration.get("status") or "本轮未体现")
+    if requested not in COLLABORATION_STATES or requested == "本轮未体现":
+        return "本轮未体现", requested != "本轮未体现"
     chains = _collaboration_chains(collaboration.get("chains"))
     actual = [row for row in chains if all(row.get(key) for key in ("provider", "consumer", "artifact", "task", "result", "invocation_source_ids"))
               and row["provider"] != row["consumer"]]
@@ -850,7 +855,7 @@ def _collaboration_status(collaboration: dict[str, Any]) -> tuple[str, bool]:
     requested_index = COLLABORATION_STATES.index(requested)
     if requested_index <= ceiling:
         return requested, False
-    return (COLLABORATION_STATES[ceiling] if ceiling >= 0 else "待核验"), True
+    return (COLLABORATION_STATES[ceiling] if ceiling >= 0 else "本轮未体现"), True
 
 
 def _evidence_chain(value: Any) -> list[dict[str, Any]]:
@@ -882,7 +887,7 @@ def _normalize_level(value: Any, prefix: str, *, require_sources: bool = False) 
     level = str(row.get("level") or "待确认")
     reason = str(row.get("reason") or "").strip()
     source_ids = text_list(row.get("source_ids"))
-    if level not in allowed or not reason or (require_sources and not source_ids):
+    if level not in allowed or not reason or (require_sources and not source_ids and level != "G1"):
         level = "待确认"
         reason = reason or "缺少可追溯的等级依据。"
     return {"level": level, "reason": reason, "gap_to_next": str(row.get("gap_to_next") or ""), "source_ids": source_ids}
@@ -920,9 +925,9 @@ def _normalize_d_judgment(
     dimension: dict[str, Any], value: dict[str, Any]
 ) -> dict[str, Any]:
     allowed_statuses = {row["status"] for row in DIMENSION_STATUSES}
-    status = str(value.get("status") or "待核验")
+    status = str(value.get("status") or "本轮未体现")
     if status not in allowed_statuses:
-        status = "待核验"
+        status = "本轮未体现"
     dimension_id = str(dimension.get("question_id") or dimension.get("metric_id") or "")
     positions = set(OUTCOME_POSITIONS)
     core_position = str(value.get("core_position") or "待判断")
@@ -940,14 +945,14 @@ def _normalize_d_judgment(
     for definition in branch_definitions:
         branch_id = str(definition.get("branch_id") or "")
         supplied = supplied_branches.get(branch_id) or {}
-        branch_status = str(supplied.get("status") or "待核验")
+        branch_status = str(supplied.get("status") or "本轮未体现")
         if branch_status not in allowed_statuses:
-            branch_status = "待核验"
+            branch_status = "本轮未体现"
         branch_judgments.append({
             "branch_id": branch_id,
             "name": str(definition.get("name") or ""),
             "status": branch_status,
-            "conclusion": str(supplied.get("conclusion") or "该原子判断尚待核验。")[:500],
+            "conclusion": str(supplied.get("conclusion") or "该原子判断尚本轮未体现。")[:500],
             "decisive_source_ids": [str(row)[:160] for row in supplied.get("decisive_source_ids") or []][:8],
         })
     return {
@@ -957,7 +962,7 @@ def _normalize_d_judgment(
         "grade": _normalize_level(value.get("grade"), "G", require_sources=True),
         "branch_judgments": branch_judgments,
         "core_position": core_position,
-        "conclusion": str(value.get("conclusion") or "当前证据不足，暂待核验。")[:500],
+        "conclusion": str(value.get("conclusion") or "当前证据不足，暂本轮未体现。")[:500],
         "expert_analysis": str(value.get("expert_analysis") or ""),
         "time_assessment": copy.deepcopy(value.get("time_assessment") or {}),
         "evidence_chain": _evidence_chain(value.get("evidence_chain")),
@@ -987,7 +992,7 @@ def _failed_d_judgment(dimension: dict[str, Any], error: str) -> dict[str, Any]:
     return _normalize_d_judgment(
         dimension,
         {
-            "status": "待核验",
+            "status": "本轮未体现",
             "conclusion": "本维度评价调用未完成，不能形成事实判断。",
             "expert_analysis": error,
             "missing_inputs": ["重新运行本维度评价并保留完整调用记录。"],
@@ -1036,14 +1041,14 @@ def _failed_d_outcome_synthesis(error: str) -> dict[str, Any]:
 
 
 def _normalize_d_project_synthesis(value: dict[str, Any]) -> dict[str, Any]:
-    layer_statuses = {"强", "较强", "初步形成", "尚未形成", "待核验"}
+    layer_statuses = {"强", "较强", "初步形成", "尚未形成", "本轮未体现"}
     collaboration_statuses = set(COLLABORATION_STATES)
 
     def layer(key: str) -> dict[str, Any]:
         source = value.get(key) if isinstance(value.get(key), dict) else {}
-        status = str(source.get("status") or "待核验")
+        status = str(source.get("status") or "本轮未体现")
         return {
-            "status": status if status in layer_statuses else "待核验",
+            "status": status if status in layer_statuses else "本轮未体现",
             "conclusion": str(source.get("conclusion") or ""),
             "basis": [str(row) for row in source.get("basis") or []],
             "limitations": [str(row) for row in source.get("limitations") or []],
@@ -1061,9 +1066,9 @@ def _normalize_d_project_synthesis(value: dict[str, Any]) -> dict[str, Any]:
                                   for item in row.get("included_outcomes") or [] if isinstance(item, dict)],
             "key_facts": normalize_facts(row.get("key_facts")),
             "confirmation_requests": normalize_requests(row.get("confirmation_requests")),
-            "coverage": str(row.get("coverage") or "待核验"),
-            "depth": str(row.get("depth") or "待核验"),
-            "concentration": str(row.get("concentration") or "待核验"),
+            "coverage": str(row.get("coverage") or "本轮未体现"),
+            "depth": str(row.get("depth") or "本轮未体现"),
+            "concentration": str(row.get("concentration") or "本轮未体现"),
         }
     return {
         "dimension_portfolio": dimension_portfolio,
@@ -1074,7 +1079,7 @@ def _normalize_d_project_synthesis(value: dict[str, Any]) -> dict[str, Any]:
         "specific_layer": layer("specific_layer"),
         "global_layer": layer("global_layer"),
         "system_collaboration": {
-            "status": collaboration_status if collaboration_status in collaboration_statuses else "待核验",
+            "status": collaboration_status if collaboration_status in collaboration_statuses else "本轮未体现",
             "conclusion": "当前材料未支持所声称的协同阶段，需核实实际调用、反馈与重复运行记录。" if collaboration_downgraded else str(collaboration.get("conclusion") or ""),
             "design_basis": text_list(collaboration.get("design_basis")),
             "chains": _collaboration_chains(collaboration.get("chains")),

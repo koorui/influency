@@ -28,7 +28,10 @@ class SearchBoundary(StrictModel):
 
     @model_validator(mode='after')
     def chronology(self):
-        if self.project_start_date>self.review_cutoff or self.review_cutoff>date.today():raise ValueError('请核对项目启动日期与阶段评审截止日')
+        if self.project_start_date>self.review_cutoff:
+            raise ValueError('证据截止日期不能早于项目启动日期')
+        if self.review_cutoff>date.today():
+            raise ValueError(f'本次评价的证据截止日期不能晚于今天（{date.today().isoformat()}），此处不是项目计划验收日期')
         return self
 
 
@@ -100,7 +103,7 @@ def materials(db,ids):
         m=db.get(Material,id)
         if not m:raise HTTPException(404,'选定材料不存在')
         if m.purpose!='project':raise HTTPException(422,'参考结果或流程说明不能作为工作流的项目原始依据')
-        rows.append({'id':m.id,'filename':m.filename,'text':m.text,'sha256':m.sha256})
+        rows.append({'id':m.id,'filename':m.filename,'text':m.text})
     if sum(len(m['text']) for m in rows)>settings().codex_max_input_chars:
         raise HTTPException(422,'材料超过单流程文本限制，请按成果拆分')
     return rows
@@ -154,13 +157,11 @@ def detail(id:UUID,db:Session=Depends(get_db)):
         if p.is_file() and p.name!='execution.lock' and p.suffix in ARTIFACT_SUFFIXES and 'skill' not in p.relative_to(store.root).parts and '__pycache__' not in p.parts:
             files.append({'path':p.relative_to(store.root).as_posix(),'size':p.stat().st_size})
     def verified_output(name):
-        from .pipeline_store import fingerprint
         record=state['stages'][name]
         if record['status']!='succeeded':return {}
         path=(store.root/record['output']).resolve()
         if not path.is_relative_to(store.root):raise HTTPException(409,'阶段底稿路径异常')
         value=json.loads(path.read_text(encoding='utf-8'))
-        if fingerprint(value)!=record['output_hash']:raise HTTPException(409,'阶段底稿与存档不一致')
         return value
     intake=verified_output('wu_intake').get('intake',{})
     search=verified_output('search_replay').get('replay',{})

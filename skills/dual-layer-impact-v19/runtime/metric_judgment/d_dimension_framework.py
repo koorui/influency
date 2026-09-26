@@ -58,10 +58,10 @@ D_DIMENSIONS: list[dict[str, Any]] = [
         "question_id": "D6",
         "metric_id": "D6",
         "axis": "influence",
-        "name": "浦江国家实验室AI4S主线集成影响力",
-        "short_name": "浦江AI4S主线集成",
-        "question": "该成果是否正式进入浦江国家实验室AI4S主线，发生实际调用并形成持续运行或服务？",
-        "required_views": ["浦江AI4S正式接入", "浦江主线实际调用", "持续运行与维护"],
+        "name": "项目或组织主线集成影响力",
+        "short_name": "项目主线集成",
+        "question": "该成果是否正式进入项目或组织主线，发生实际调用并形成持续运行或服务？",
+        "required_views": ["平台正式接入", "项目主线实际调用", "持续运行与维护"],
         "ai_contribution_role": "not_primary",
     },
     {
@@ -156,19 +156,19 @@ D_BRANCH_INDICATORS: list[dict[str, Any]] = [
         "evidence_requirements": ["使用前后对照", "过程或结果日志", "效果归因与副作用", "持续使用周期"],
     },
     {
-        "branch_id": "D6.1", "dimension_id": "D6", "name": "浦江AI4S主线正式接入",
-        "question": "成果是否已被浦江国家实验室AI4S主线正式部署、纳管或接入？",
-        "evidence_requirements": ["浦江主线纳管证明", "部署或接口记录", "主线流程位置"],
+        "branch_id": "D6.1", "dimension_id": "D6", "name": "项目主线正式接入",
+        "question": "成果是否已被项目或组织主线正式部署、纳管或接入？",
+        "evidence_requirements": ["项目主线纳管证明", "部署或接口记录", "主线流程位置"],
     },
     {
-        "branch_id": "D6.2", "dimension_id": "D6", "name": "浦江主线实际调用",
-        "question": "浦江AI4S主线中是否发生了服务任务、接口调用或非原团队实际使用？",
-        "evidence_requirements": ["浦江侧调用主体", "服务任务", "接口调用日志", "非原团队反馈"],
+        "branch_id": "D6.2", "dimension_id": "D6", "name": "项目主线实际调用",
+        "question": "项目主线中是否发生了服务任务、接口调用或非原团队实际使用？",
+        "evidence_requirements": ["平台或流程侧调用主体", "服务任务", "接口调用日志", "非原团队反馈"],
     },
     {
-        "branch_id": "D6.3", "dimension_id": "D6", "name": "浦江主线持续运行",
+        "branch_id": "D6.3", "dimension_id": "D6", "name": "项目主线持续运行",
         "question": "接入和调用后是否形成持续运行、稳定服务、版本维护和明确责任？",
-        "evidence_requirements": ["持续运行日志", "服务周期", "维护责任与版本", "浦江侧复核"],
+        "evidence_requirements": ["持续运行日志", "服务周期", "维护责任与版本", "平台或流程侧复核"],
     },
     {
         "branch_id": "D7.1", "dimension_id": "D7", "name": "独立第三方评价与认可",
@@ -192,7 +192,7 @@ DIMENSION_STATUSES = [
     {"status": "明确成立", "definition": "多类可追溯证据一致支持该维度判断，且关键反证不足以改变结论。"},
     {"status": "部分成立", "definition": "已有实质事实，但适用范围、独立性、时间归属或证据链仍受限制。"},
     {"status": "尚未形成", "definition": "已有证据明确显示当前尚未形成该类创新或影响，而非单纯缺材料。"},
-    {"status": "待核验", "definition": "材料缺失、冲突或不可比，当前不能可靠判断。"},
+    {"status": "本轮未体现", "definition": "材料缺失、冲突或不可比，当前不能可靠判断。"},
     {"status": "不适用", "definition": "仅在成果类型或评价范围有明确依据时使用，材料缺失不能判为不适用。"},
 ]
 
@@ -205,7 +205,7 @@ DIMENSION_INPUT_CONTRACTS: dict[str, dict[str, Any]] = {
     },
     "D2": {
         "required_sources": ["Step 3冻结成果", "项目前时间线", "项目期版本差异", "同期同行检索核验", "AI及非AI贡献归因"],
-        "synthesis_rule": "先区分项目前基础与项目期新增，再判断新增性质及其可归因性；时间线不清直接待核验。",
+        "synthesis_rule": "先区分项目前基础与项目期新增，再判断新增性质及其可归因性；时间线不清直接本轮未体现。",
         "expert_trigger": "新增是否构成方法、机制或科学能力上的实质原创。",
     },
     "D3": {
@@ -224,9 +224,9 @@ DIMENSION_INPUT_CONTRACTS: dict[str, dict[str, Any]] = {
         "expert_trigger": "使用效果是否达到领域实用门槛，或是否确由成果造成。",
     },
     "D6": {
-        "required_sources": ["浦江AI4S正式纳管或部署", "浦江侧调用或服务任务", "浦江侧持续运行和维护记录"],
+        "required_sources": ["平台正式纳管或部署", "平台或流程侧调用或服务任务", "平台或流程侧持续运行和维护记录"],
         "synthesis_rule": "正式接入但未调用只能部分成立；接入、实际调用和持续服务均有证据才可明确成立；项目内部协同不得计入。",
-        "expert_trigger": "由浦江AI4S主线负责人确认接入层级、可集成性和真实运行状态。",
+        "expert_trigger": "由项目主线负责人确认接入层级、可集成性和真实运行状态。",
     },
     "D7": {
         "required_sources": ["独立专业评价原文", "来源独立性核验", "专业社区或行业传播", "标准政策采纳位置"],
@@ -277,7 +277,7 @@ UPSTREAM_COMPONENT_CONTRACTS: dict[str, list[dict[str, Any]]] = {
             "group_id": "external_search", "group_name": "外部 Search 组",
             "components": ["项目前既有成果追溯", "同期同行方法与技术路线", "论文、专利和模型版本时间线"],
             "evaluation_use": "校验新增时间归属，并把项目期增量与同期同行路线比较，判断方法、机制或路线原创性。",
-            "prohibited_use": "后续影响不能反向证明项目期原创；时间线未闭合时必须待核验。",
+            "prohibited_use": "后续影响不能反向证明项目期原创；时间线未闭合时必须本轮未体现。",
         },
     ],
     "D3": [
@@ -337,26 +337,26 @@ UPSTREAM_COMPONENT_CONTRACTS: dict[str, list[dict[str, Any]]] = {
             "group_id": "external_search", "group_name": "外部 Search 组",
             "components": ["外部独立使用者身份", "第三方真实任务、过程与结果证明", "外部使用效果、持续使用和失败记录"],
             "evaluation_use": "用于D5.2判断外部真实应用，并与内部材料共同校验效果是否可验证、可持续。",
-            "prohibited_use": "公开检索未找到外部使用只能记为待核验，不能写成不存在外部应用。",
+            "prohibited_use": "公开检索未找到外部使用只能记为本轮未体现，不能写成不存在外部应用。",
         },
     ],
     "D6": [
         {
             "group_id": "internal_search", "group_name": "内部 Search 组",
-            "components": ["项目方声明的浦江主线位置", "候选接口、部署或纳管材料", "项目内部调用与协同记录"],
-            "evaluation_use": "前两类仅作为向浦江侧核验的候选线索；项目内部调用另行进入协同判断。",
+            "components": ["项目方声明的项目主线位置", "候选接口、部署或纳管材料", "项目内部调用与协同记录"],
+            "evaluation_use": "前两类仅作为向平台或流程侧核验的候选线索；项目内部调用另行进入协同判断。",
             "prohibited_use": "项目内部五课题互调、普通平台接入和未来可接入均不得计入D6。",
         },
         {
             "group_id": "ai_contribution", "group_name": "AI贡献组",
             "components": ["可选的技术接口与能力边界", "主线可集成性说明"],
-            "evaluation_use": "只说明计划接入的AI能力是什么，帮助浦江主线负责人判断技术对象和可集成性。",
-            "prohibited_use": "技术上可集成、已经封装接口或AI贡献较强，都不能证明已正式进入浦江主线。",
+            "evaluation_use": "只说明计划接入的AI能力是什么，帮助项目主线负责人判断技术对象和可集成性。",
+            "prohibited_use": "技术上可集成、已经封装接口或AI贡献较强，都不能证明已正式进入项目主线。",
         },
         {
             "group_id": "external_search", "group_name": "外部 Search 组",
             "components": ["浦江官方平台目录与新闻", "公开接口、服务或部署说明", "可公开核验的主线运行信息"],
-            "evaluation_use": "用于核验公开身份和主线位置；正式纳管、实际调用和持续运行仍须浦江侧记录或负责人确认。",
+            "evaluation_use": "用于核验公开身份和主线位置；正式纳管、实际调用和持续运行仍须平台或流程侧记录或负责人确认。",
             "prohibited_use": "搜到浦江新闻稿不能直接判D6成立；公开未检出也不能判定未接入。",
         },
     ],
@@ -364,7 +364,7 @@ UPSTREAM_COMPONENT_CONTRACTS: dict[str, list[dict[str, Any]]] = {
         {
             "group_id": "internal_search", "group_name": "内部 Search 组",
             "components": ["项目方申报的奖项、报道和评价线索", "成果与认可对象的对应关系", "标准、政策或战略任务声明"],
-            "evaluation_use": "形成待核验的认可清单，并锁定外部评价究竟针对哪项冻结成果。",
+            "evaluation_use": "形成本轮未体现的认可清单，并锁定外部评价究竟针对哪项冻结成果。",
             "prohibited_use": "项目方宣传、承担单位官网、专利和一般专家评审通过不能直接支撑D7。",
         },
         {
@@ -445,8 +445,8 @@ _UPSTREAM_PACKAGE_SPECS: dict[tuple[str, str], dict[str, Any]] = {
         "required_fields": ["外部使用者身份、独立性和联系方式/公开来源", "其自身真实任务、输入、过程、输出和验证", "使用效果、持续周期、反馈、停止或失败记录"],
     },
     ("D6", "internal_search"): {
-        "package_id": "IS-D6", "package_name": "浦江主线接入候选包", "target_branches": ["D6.1", "协同单独判断"],
-        "required_fields": ["声明接入的浦江主线名称和流程位置", "部署环境、接口、纳管或服务材料", "项目内部调用记录及其与浦江主线证据的区分"],
+        "package_id": "IS-D6", "package_name": "项目主线接入候选包", "target_branches": ["D6.1", "协同单独判断"],
+        "required_fields": ["声明接入的项目主线名称和流程位置", "部署环境、接口、纳管或服务材料", "项目内部调用记录及其与项目主线证据的区分"],
     },
     ("D6", "ai_contribution"): {
         "package_id": "AI-D6", "package_name": "主线可集成对象说明", "target_branches": ["D6.1（仅辅助）"],
@@ -454,7 +454,7 @@ _UPSTREAM_PACKAGE_SPECS: dict[tuple[str, str], dict[str, Any]] = {
     },
     ("D6", "external_search"): {
         "package_id": "ES-D6", "package_name": "浦江公开集成核验包", "target_branches": ["D6.1", "D6.2", "D6.3"],
-        "required_fields": ["浦江官方目录、接口、服务或部署原文", "浦江侧调用主体、任务、日志和时间", "持续运行周期、维护责任、版本及负责人复核状态"],
+        "required_fields": ["浦江官方目录、接口、服务或部署原文", "平台或流程侧调用主体、任务、日志和时间", "持续运行周期、维护责任、版本及负责人复核状态"],
     },
     ("D7", "internal_search"): {
         "package_id": "IS-D7", "package_name": "外部认可候选清单", "target_branches": ["D7.1", "D7.2", "D7.3"],
@@ -480,7 +480,7 @@ AGENT_EXECUTION_PROTOCOL = [
     {
         "step_id": "P2",
         "name": "检查必需字段和来源",
-        "instruction": "逐项核对 required_fields、日期、来源编号和时间角色。缺少会改变结论的材料时，不把“未提供”写成“不存在”，而是登记缺口并将受影响分支保留为待核验或部分成立。",
+        "instruction": "逐项核对 required_fields、日期、来源编号和时间角色。缺少会改变结论的材料时，不把“未提供”写成“不存在”，而是登记缺口并将受影响分支保留为本轮未体现或部分成立。",
         "writes_to": ["missing_inputs", "time_assessment", "evidence_confidence"],
     },
     {
@@ -512,9 +512,9 @@ _AGENT_USE_SPECS: dict[tuple[str, str], dict[str, Any]] = {
     ("D1", "internal_search"): {
         "input_path": "adapted_evidence.step3_problem_links + step1_core_problems + internal_search + project_facts",
         "agent_use_steps": [
-            _agent_step("核对显式问题链接", "用 problem_id 与 outcome_id 核对 Step 3 已确认的成果—核心问题链接。存在直接解决关系才支持 D1.1；只有技术支撑则写明支撑层级；没有显式链接时 D1.1 必须待核验，禁止按关键词自行匹配。", "branch_judgments[D1.1]", "missing_inputs", "core_position"),
+            _agent_step("核对显式问题链接", "用 problem_id 与 outcome_id 核对 Step 3 已确认的成果—核心问题链接。存在直接解决关系才支持 D1.1；只有技术支撑则写明支撑层级；没有显式链接时 D1.1 必须本轮未体现，禁止按关键词自行匹配。", "branch_judgments[D1.1]", "missing_inputs", "core_position"),
             _agent_step("提取同条件增量", "从原始卡点、任务、数据、指标、测试条件和提升前后数值建立同口径事实链；成功结果进入支持依据，失败案例与适用边界进入限制或反证，用于 D1.2。", "branch_judgments[D1.2]", "evidence_chain", "basis", "counterevidence"),
-            _agent_step("约束先进性结论", "内部材料只能形成项目方基线与待核验声明，可为 D1.3 提供候选事实，但不能单独写成领先；所有决定性事实均回填来源编号。", "branch_judgments[D1.3]", "basis", "evidence_confidence"),
+            _agent_step("约束先进性结论", "内部材料只能形成项目方基线与本轮未体现声明，可为 D1.3 提供候选事实，但不能单独写成领先；所有决定性事实均回填来源编号。", "branch_judgments[D1.3]", "basis", "evidence_confidence"),
         ],
     },
     ("D1", "ai_contribution"): {
@@ -530,7 +530,7 @@ _AGENT_USE_SPECS: dict[tuple[str, str], dict[str, Any]] = {
         "agent_use_steps": [
             _agent_step("先审可比性", "逐条核对评审窗口、任务、数据集、split、指标和测试协议。完全同口径才可直接比较；口径不一致的记录只能作为限制说明，不能充当领先证据。", "evidence_chain", "counterevidence", "time_assessment"),
             _agent_step("核验性能位置", "将项目值与评审窗口内外部基线逐项对照，分别把支持、限制和反驳写入 D1.2；来源原文编号写入该分支 decisive_source_ids。", "branch_judgments[D1.2]", "basis", "counterevidence"),
-            _agent_step("判断横向先进性", "只有同期强基线基本覆盖且同口径比较成立时才支持 D1.3；缺强基线、协议不齐或仅有项目方自报时保留待核验或部分成立，并明确适用边界。", "branch_judgments[D1.3]", "missing_inputs", "expert_analysis"),
+            _agent_step("判断横向先进性", "只有同期强基线基本覆盖且同口径比较成立时才支持 D1.3；缺强基线、协议不齐或仅有项目方自报时保留本轮未体现或部分成立，并明确适用边界。", "branch_judgments[D1.3]", "missing_inputs", "expert_analysis"),
         ],
     },
     ("D2", "internal_search"): {
@@ -538,14 +538,14 @@ _AGENT_USE_SPECS: dict[tuple[str, str], dict[str, Any]] = {
         "agent_use_steps": [
             _agent_step("建立项目开始前基线", "按日期汇总 T0 已有论文、专利、方法、模型和版本，先写入 prior_baseline；来源不清或日期晚于项目开始的内容不能算前序基础。", "time_assessment.prior_baseline", "evidence_chain"),
             _agent_step("形成逐项差异表", "把 T1 项目期版本与 T0 对照，将每项变化标为新增、继承或扩展，并关联实验、交付记录和来源位置；只用可核日期的新增支持 D2.1。", "branch_judgments[D2.1]", "time_assessment.current_window_increment", "basis"),
-            _agent_step("处理时间链缺口", "若只有最终成果、没有 T0 或版本日期，不能倒推项目期新增，应在 D2.1 写待核验并列出需要补充的历史版本或过程记录。", "branch_judgments[D2.1]", "missing_inputs", "evidence_confidence"),
+            _agent_step("处理时间链缺口", "若只有最终成果、没有 T0 或版本日期，不能倒推项目期新增，应在 D2.1 写本轮未体现并列出需要补充的历史版本或过程记录。", "branch_judgments[D2.1]", "missing_inputs", "evidence_confidence"),
         ],
     },
     ("D2", "ai_contribution"): {
         "input_path": "adapted_evidence.ai_contribution",
         "agent_use_steps": [
             _agent_step("识别新增性质", "读取项目期新增人工智能方法、机制或科学能力，区分真正的方法/机制变化与单纯换数据、加算力、做自动化或工程扩容，用于 D2.2。", "branch_judgments[D2.2]", "evidence_chain"),
-            _agent_step("验证可归因性", "用消融、反事实或版本差异检验新增效果是否由该人工智能变化造成；证据充分支持 D2.3，混杂因素未拆开则部分成立或待核验。", "branch_judgments[D2.3]", "ai_attribution", "counterevidence"),
+            _agent_step("验证可归因性", "用消融、反事实或版本差异检验新增效果是否由该人工智能变化造成；证据充分支持 D2.3，混杂因素未拆开则部分成立或本轮未体现。", "branch_judgments[D2.3]", "ai_attribution", "counterevidence"),
             _agent_step("记录混杂边界", "明确数据、算力、自动化、设备和人工各自作用；不把共同成果全部归给人工智能，也不把“使用了人工智能”本身写成原创。", "ai_attribution", "expert_analysis", "judgment_confidence"),
         ],
     },
@@ -554,7 +554,7 @@ _AGENT_USE_SPECS: dict[tuple[str, str], dict[str, Any]] = {
         "agent_use_steps": [
             _agent_step("核对前序成果", "按发布日期、预印本日期、版本记录核验同团队在项目开始前已经具备什么；发现前序同构成果时限制 D2.1，不能将继承内容计为新增。", "branch_judgments[D2.1]", "time_assessment.prior_baseline", "counterevidence"),
             _agent_step("比较同期路线", "比较评审窗口内同行方法、机制和替代路线的实质相同点与差异点，用于 D2.2；后续论文或影响只能写 subsequent_effect，不能反证当时原创。", "branch_judgments[D2.2]", "time_assessment.subsequent_effect", "evidence_chain"),
-            _agent_step("关闭时间边界", "时间线、作者关系或技术差异无法闭合时，列出具体缺口并将对应分支保留待核验；原文来源进入 decisive_source_ids。", "missing_inputs", "branch_judgments[D2.1]", "branch_judgments[D2.2]"),
+            _agent_step("关闭时间边界", "时间线、作者关系或技术差异无法闭合时，列出具体缺口并将对应分支保留本轮未体现；原文来源进入 decisive_source_ids。", "missing_inputs", "branch_judgments[D2.1]", "branch_judgments[D2.2]"),
         ],
     },
     ("D3", "internal_search"): {
@@ -562,7 +562,7 @@ _AGENT_USE_SPECS: dict[tuple[str, str], dict[str, Any]] = {
         "agent_use_steps": [
             _agent_step("锁定被评价产出", "用 outcome_id 对应论文 DOI/题名、作者、机构和正式发表状态，只把确属当前冻结成果的论文交给外部核验。", "branch_judgments[D3.1]", "evidence_chain"),
             _agent_step("生成引用核验线索", "将项目方提供的引用、复现或同行跟进清单作为候选线索，并保留材料位置；在外部原文确认前不得作为独立学术行为成立依据。", "missing_inputs", "evidence_chain"),
-            _agent_step("避免数量替代行为", "论文数量、期刊层级和自报引用只描述产出底账，不直接提高 D3 状态；身份对应不清时 D3.1 待核验。", "branch_judgments[D3.1]", "expert_analysis"),
+            _agent_step("避免数量替代行为", "论文数量、期刊层级和自报引用只描述产出底账，不直接提高 D3 状态；身份对应不清时 D3.1 本轮未体现。", "branch_judgments[D3.1]", "expert_analysis"),
         ],
     },
     ("D3", "ai_contribution"): {
@@ -601,7 +601,7 @@ _AGENT_USE_SPECS: dict[tuple[str, str], dict[str, Any]] = {
         "agent_use_steps": [
             _agent_step("验证真实开放", "实际访问地址并核对下载、许可、版本和关键材料是否存在；可访问且对象对应才支持 D4.1，失效链接、许可冲突或关键资产缺失作为限制/反证。", "branch_judgments[D4.1]", "basis", "counterevidence"),
             _agent_step("验证社区可用", "结合安装文档、issue、维护响应和第三方运行过程判断 D4.2；仅有 star、下载量或宣传报道不能证明可用。", "branch_judgments[D4.2]", "evidence_chain", "counterevidence"),
-            _agent_step("验证独立复用", "只有独立主体的复现、fork、二次开发或衍生资产且对象、过程、结果可核时才支持 D4.3；公开未找到时写待核验而非无人复用。", "branch_judgments[D4.3]", "basis", "missing_inputs"),
+            _agent_step("验证独立复用", "只有独立主体的复现、fork、二次开发或衍生资产且对象、过程、结果可核时才支持 D4.3；公开未找到时写本轮未体现而非无人复用。", "branch_judgments[D4.3]", "basis", "missing_inputs"),
         ],
     },
     ("D5", "internal_search"): {
@@ -625,30 +625,30 @@ _AGENT_USE_SPECS: dict[tuple[str, str], dict[str, Any]] = {
         "agent_use_steps": [
             _agent_step("核验外部主体独立性", "确认使用者不属于项目内部团队，并核对其自身任务、输入、过程、输出和验证记录；闭环成立才支持 D5.2。", "branch_judgments[D5.2]", "basis", "evidence_chain"),
             _agent_step("核验外部效果", "把外部使用前后效果、持续周期、反馈、停止或失败记录与内部材料交叉核对，用于 D5.3；营销案例或无过程证明的客户名单只作线索。", "branch_judgments[D5.3]", "counterevidence", "expert_analysis"),
-            _agent_step("处理公开未命中", "未检索到外部应用时只登记缺口并将 D5.2 保留待核验；只有明确的否定性原始记录才能作为反证。", "missing_inputs", "branch_judgments[D5.2]", "evidence_confidence"),
+            _agent_step("处理公开未命中", "未检索到外部应用时只登记缺口并将 D5.2 保留本轮未体现；只有明确的否定性原始记录才能作为反证。", "missing_inputs", "branch_judgments[D5.2]", "evidence_confidence"),
         ],
     },
     ("D6", "internal_search"): {
         "input_path": "adapted_evidence.internal_search + project_facts",
         "agent_use_steps": [
-            _agent_step("提取浦江接入候选", "读取项目方声明的浦江主线名称、流程位置、接口、部署或纳管材料，只生成向浦江侧核验的 D6.1 候选，不直接判正式接入。", "branch_judgments[D6.1]", "evidence_chain", "missing_inputs"),
+            _agent_step("提取浦江接入候选", "读取项目方声明的项目主线名称、流程位置、接口、部署或纳管材料，只生成向平台或流程侧核验的 D6.1 候选，不直接判正式接入。", "branch_judgments[D6.1]", "evidence_chain", "missing_inputs"),
             _agent_step("剔除项目内部协同", "把五课题互调、项目内部服务和普通平台接入从 D6 证据中剔除，另留给系统协同判断，不得写入 D6.1–D6.3 的支持依据。", "counterevidence", "expert_analysis"),
-            _agent_step("保持调用与运行待核", "内部日志若没有浦江侧主体和主线身份，只能作为线索；D6.2 实际调用和 D6.3 持续运行须等待浦江侧记录。", "branch_judgments[D6.2]", "branch_judgments[D6.3]", "missing_inputs"),
+            _agent_step("保持调用与运行待核", "内部日志若没有平台或流程侧主体和主线身份，只能作为线索；D6.2 实际调用和 D6.3 持续运行须等待平台或流程侧记录。", "branch_judgments[D6.2]", "branch_judgments[D6.3]", "missing_inputs"),
         ],
     },
     ("D6", "ai_contribution"): {
         "input_path": "adapted_evidence.ai_contribution（本维度仅作技术对象说明）",
         "agent_use_steps": [
-            _agent_step("说明拟接入对象", "读取人工智能能力、接口、输入输出、版本、运行依赖与安全边界，说明浦江主线可能接入的具体技术对象。", "expert_analysis", "evidence_chain"),
+            _agent_step("说明拟接入对象", "读取人工智能能力、接口、输入输出、版本、运行依赖与安全边界，说明项目主线可能接入的具体技术对象。", "expert_analysis", "evidence_chain"),
             _agent_step("辅助可集成性复核", "只把组件信息提供给浦江负责人判断可集成性；已封装接口或技术上可集成不等于正式纳管，不能单独支持 D6.1。", "branch_judgments[D6.1]", "counterevidence"),
-            _agent_step("禁止推断调用运行", "该组件不更新 D6.2/D6.3；实际调用、持续服务和维护状态必须来自浦江侧记录或负责人确认。", "branch_judgments[D6.2]", "branch_judgments[D6.3]", "missing_inputs"),
+            _agent_step("禁止推断调用运行", "该组件不更新 D6.2/D6.3；实际调用、持续服务和维护状态必须来自平台或流程侧记录或负责人确认。", "branch_judgments[D6.2]", "branch_judgments[D6.3]", "missing_inputs"),
         ],
     },
     ("D6", "external_search"): {
         "input_path": "adapted_evidence.external_search",
         "agent_use_steps": [
             _agent_step("核验主线正式身份", "用浦江官方目录、接口、服务或部署原文确认成果是否被正式纳管以及处于哪一主线位置；新闻稿只作线索，不能单独支持 D6.1。", "branch_judgments[D6.1]", "basis", "counterevidence"),
-            _agent_step("核验浦江侧实际调用", "核对浦江侧调用主体、真实任务、日志和日期，确认不是项目内部互调后再支持 D6.2。", "branch_judgments[D6.2]", "evidence_chain", "basis"),
+            _agent_step("核验平台或流程侧实际调用", "核对平台或流程侧调用主体、真实任务、日志和日期，确认不是项目内部互调后再支持 D6.2。", "branch_judgments[D6.2]", "evidence_chain", "basis"),
             _agent_step("核验持续运行", "依据持续周期、维护责任、版本更新和负责人复核判断 D6.3；公开未检出不能判未接入，关键事实无公开记录时提出面向浦江负责人的单一复核问题。", "branch_judgments[D6.3]", "missing_inputs", "expert_question"),
         ],
     },
@@ -693,7 +693,7 @@ HARD_RULES = [
     {
         "rule_id": "B01",
         "name": "项目期新增边界",
-        "effect": "缺少项目实施期新增证据时，D2只能判为待核验或尚未形成。",
+        "effect": "缺少项目实施期新增证据时，D2只能判为本轮未体现或尚未形成。",
         "flexibility": "可补充带日期的版本、实验记录、合同交付或第三方记录。",
     },
     {
@@ -728,8 +728,8 @@ HARD_RULES = [
     },
     {
         "rule_id": "B07",
-        "name": "浦江主线集成边界",
-        "effect": "D6只认浦江国家实验室AI4S主线的正式接入、实际调用和持续运行；项目内部课题调用、普通平台接入或未来可接入均不得计入D6。",
+        "name": "项目主线集成边界",
+        "effect": "D6只认项目或组织主线的正式接入、实际调用和持续运行；项目内部课题调用、普通平台接入或未来可接入均不得计入D6。",
         "flexibility": "项目内部调用和共享资产进入项目系统性/课题协同单独判断；尚未接入时可记录集成价值，但不能据此判D6成立。",
     },
     {
@@ -753,8 +753,8 @@ HARD_RULES = [
     {
         "rule_id": "B11",
         "name": "未检出不等于未形成",
-        "effect": "公开检索未找到证据时只能判为待核验；只有检索范围充分且存在明确否定事实时，才能判尚未形成。",
-        "flexibility": "可向项目方索取第三方使用证明、运行日志或浦江侧材料。",
+        "effect": "公开检索未找到证据时只能判为本轮未体现；只有检索范围充分且存在明确否定事实时，才能判尚未形成。",
+        "flexibility": "可向项目方索取第三方使用证明、运行日志或平台或流程侧材料。",
     },
     {
         "rule_id": "B12",
@@ -783,12 +783,12 @@ LAYER_SUMMARY_METHOD = {
         "question": "这些成果是否走出自己的题目并产生更广泛价值？",
         "primary_dimensions": ["D3", "D4", "D6", "D7"],
         "supporting_dimensions": ["D5"],
-        "rule": "以核心成果为主，并按维度纳入非核心成果的真实学术、复用、应用、浦江主线或专业影响；以覆盖度、深度和集中度校正范围，共享来源与事件去重，不另评一套指标。",
+        "rule": "以核心成果为主，并按维度纳入非核心成果的真实学术、复用、应用、项目主线或专业影响；以覆盖度、深度和集中度校正范围，共享来源与事件去重，不另评一套指标。",
     },
     "system_collaboration": {
         "name": "项目系统性 / 课题协同性",
         "question": "课题是否形成数据、模型、平台、实验或任务链上的真实协作？",
-        "rule": "从任务书设计关系到真实输入输出、跨课题任务链、反馈闭环、持续重复运行逐级核查。每条链说明谁给谁什么、任务、结果、调用与反馈证据。单独判断，不并入任何D维度；浦江主线只归D6。",
+        "rule": "从任务书设计关系到真实输入输出、跨课题任务链、反馈闭环、持续重复运行逐级核查。每条链说明谁给谁什么、任务、结果、调用与反馈证据。单独判断，不并入任何D维度；项目主线只归D6。",
     },
 }
 
