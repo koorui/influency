@@ -26,7 +26,9 @@ def wu_intake_stage(inputs,outputs,folder):
         (folder/relative).write_text(material['text'],encoding='utf-8')
         request['materials'].append({'id':material['id'],'filename':material['filename'],
             'text_file':relative,'characters':len(material['text'])})
+    attribution_rules=(SKILLS/'data-purification-ai-attribution/references/preparation.md').read_text(encoding='utf-8')
     value=execute_json_stage(folder,WuIntake,request,
+        attribution_rules+'\n\n'+
         'Execute only Wu Step 0 and Step 1: resolve the outcome, build the 12-field card, and extract factual attribution inputs. '
         'The user has already supplied title and project_name in the input manifest. Materials are provided in full in materials/*.txt. '
         'Read these UTF-8 files with shell/Python. Locate the requested outcome using its distinctive terms and documented aliases, '

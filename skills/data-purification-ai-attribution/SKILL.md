@@ -9,6 +9,8 @@ description: 调用用户交付的dca-integration原版代码，按结构化证�
 
 ## 输入
 
+准备结构化输入及解释输出时必读 [贡献归因输入准备](references/preparation.md)。平台在成果定位阶段注入该规则，再调用确定性引擎；修改本文件不会自动改变原引擎计算。
+
 归因阶段消费上游成果定位得到的项目、成果ID、事实、声明、证据与Search发现。按照 `schemas/attribution-input.schema.json` 整理输入。保留原始证据编号和来源位置；缺少比较基线、数值、单位或条件时标记缺口，禁止为完成计算编造数值。
 
 Search尚未交付时可消费同项目历史Search回放，必须记录原来源、时间和replay标识；不能声称本次重新检索。not_found表示此次/历史检索未找到，不表示事实不存在。
