@@ -1,8 +1,8 @@
 # 平台执行契约 v2.1
 
-此文件将吴老师v2的开放对象字段补充为机器可验证格式，不改变六级含义。`scripts/assessment_contract.py` 是结构与引用校验的来源，JSON Schema由它生成。
+此文件定义统一技能的管理者报告格式。`scripts/assessment_contract.py` 是结构与引用校验的来源，JSON Schema由它生成。判级规则只读取本技能的当前标准，v2仅表示兼容的字段结构。
 
-- schema_version固定为wu-outcome-v2.1，rubric_id固定为wu-v2-six-levels。
+- schema_version保留wu-outcome-v2.1；新报告rubric_id为unified-double-layer-impact.v1。读取旧报告仍接受wu-v2-six-levels，但不将其自动标记为新标准重评结果。
 - outcome_card为12个具名字段的数组；evidence_index为具备唯一ID的证据数组。所有引用必须命中本次证据。
 - 项目证据：kind=project，material_id取input.json材料清单的id，quote逐字复制材料文本，locator标物理页或段落；verification=project_statement。
 - 外部证据：kind=external，material_id=null，url为实际来源HTTP(S)地址。source写发布主体，date写能确认的日期或null，quote为已读原文，supports/does_not_prove明确适用边界。

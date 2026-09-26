@@ -623,7 +623,10 @@
       "type": "string"
     },
     "rubric_id": {
-      "const": "wu-v2-six-levels",
+      "enum": [
+        "unified-double-layer-impact.v1",
+        "wu-v2-six-levels"
+      ],
       "title": "Rubric Id",
       "type": "string"
     },

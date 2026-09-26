@@ -68,7 +68,7 @@ class CodexV19Client:
                 'Every key_facts/evidence_chain entry must contain a nonempty fact, source_ids and outcome_ids. '
                 'An absence of materials belongs in missing_inputs, not in a fact with empty references. Empty fact arrays are allowed. '
                 'Do not omit any of the three branches when judging a D dimension.',
-                skill_root=SKILL_ROOT.parent/'dual-layer-impact-v19',timeout=self.timeout,inline_input=True)
+                skill_root=SKILL_ROOT,timeout=self.timeout,inline_input=True)
             data=reply.model_dump(mode='json') if direct else json.loads(reply.result_json)
             if not isinstance(data,dict):raise ValueError('v19 model output must be an object')
             validate_source_references(data,payload)

@@ -552,6 +552,8 @@ class IndicatorEvaluationPipeline:
                 "call_formula": "每成果7次D维度直接评价 + 1次成果观点综合；全项目1次特定层/全局层/协同归纳",
                 "formal_input_ready": contract["formal_evaluation_ready"],
                 "standard_version": EVALUATION_STANDARD_VERSION,
+                "rubric_version": RUBRIC_VERSION,
+                "grading_standard": GRADING_VERSION,
                 "output_contract_version": "structured-dimension-facts-with-grades.v3",
             },
             "input_contract": contract,

@@ -1,0 +1,107 @@
+{
+  "source_release": "双层影响力工具_v19_交付包_20260923_0735",
+  "standard_version": "outcome-d1-d7-evaluation.v19",
+  "files": [
+    {
+      "source": "backend/metric_judgment/__init__.py",
+      "bundled": "runtime/metric_judgment/__init__.py"
+    },
+    {
+      "source": "backend/metric_judgment/active_indicators.py",
+      "bundled": "runtime/metric_judgment/active_indicators.py"
+    },
+    {
+      "source": "backend/metric_judgment/citation_materials.py",
+      "bundled": "runtime/metric_judgment/citation_materials.py"
+    },
+    {
+      "source": "backend/metric_judgment/config.py",
+      "bundled": "runtime/metric_judgment/config.py"
+    },
+    {
+      "source": "backend/metric_judgment/d_dimension_framework.py",
+      "bundled": "runtime/metric_judgment/d_dimension_framework.py"
+    },
+    {
+      "source": "backend/metric_judgment/evaluation_policy.py",
+      "bundled": "runtime/metric_judgment/evaluation_policy.py"
+    },
+    {
+      "source": "backend/metric_judgment/evidence_adapter.py",
+      "bundled": "runtime/metric_judgment/evidence_adapter.py"
+    },
+    {
+      "source": "backend/metric_judgment/evidence_repository.py",
+      "bundled": "runtime/metric_judgment/evidence_repository.py"
+    },
+    {
+      "source": "backend/metric_judgment/external_claim_routing.py",
+      "bundled": "runtime/metric_judgment/external_claim_routing.py"
+    },
+    {
+      "source": "backend/metric_judgment/external_search_import.py",
+      "bundled": "runtime/metric_judgment/external_search_import.py"
+    },
+    {
+      "source": "backend/metric_judgment/indicator_catalog.py",
+      "bundled": "runtime/metric_judgment/indicator_catalog.py"
+    },
+    {
+      "source": "backend/metric_judgment/indicator_product.py",
+      "bundled": "runtime/metric_judgment/indicator_product.py"
+    },
+    {
+      "source": "backend/metric_judgment/input_coverage.py",
+      "bundled": "runtime/metric_judgment/input_coverage.py"
+    },
+    {
+      "source": "backend/metric_judgment/integration_v4.py",
+      "bundled": "runtime/metric_judgment/integration_v4.py"
+    },
+    {
+      "source": "backend/metric_judgment/llm.py",
+      "bundled": "runtime/metric_judgment/llm.py"
+    },
+    {
+      "source": "backend/metric_judgment/material_routing.py",
+      "bundled": "runtime/metric_judgment/material_routing.py"
+    },
+    {
+      "source": "backend/metric_judgment/material_routing_review.json",
+      "bundled": "runtime/metric_judgment/material_routing_review.json"
+    },
+    {
+      "source": "backend/metric_judgment/milestones.py",
+      "bundled": "runtime/metric_judgment/milestones.py"
+    },
+    {
+      "source": "backend/metric_judgment/prepared_evidence.py",
+      "bundled": "runtime/metric_judgment/prepared_evidence.py"
+    },
+    {
+      "source": "backend/metric_judgment/trace.py",
+      "bundled": "runtime/metric_judgment/trace.py"
+    },
+    {
+      "source": "backend/metric_judgment/upstream_material_review.json",
+      "bundled": "runtime/metric_judgment/upstream_material_review.json"
+    },
+    {
+      "source": "backend/metric_judgment/upstream_materials.py",
+      "bundled": "runtime/metric_judgment/upstream_materials.py"
+    },
+    {
+      "source": "impact_eval/__init__.py",
+      "bundled": "runtime/impact_eval/__init__.py"
+    },
+    {
+      "source": "impact_eval/config.py",
+      "bundled": "runtime/impact_eval/config.py"
+    },
+    {
+      "source": "impact_eval/llm.py",
+      "bundled": "runtime/impact_eval/llm.py"
+    }
+  ],
+  "note": "Original release paths record provenance only; the bundled engine is maintained under the unified grading standard."
+}

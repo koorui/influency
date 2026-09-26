@@ -1,10 +1,16 @@
-"""Executable v2 contract. This module validates structure and reference integrity,
+"""Unified evaluation contract with backward-compatible v2 report structure.
+This module validates structure and reference integrity,
 not the scientific truth of an evaluation. Requires pydantic >= 2.7.
 """
+import json
+from pathlib import Path
 from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-LEVELS = ['成果形成与验证', '局部作用验证', '外部应用验证', '专业方向显著影响', '领域基础能力', '重大引领影响']
+STANDARD = json.loads((Path(__file__).resolve().parents[1]/'references/grading-standard-20260925.json').read_text(encoding='utf-8'))
+RUBRIC_VERSION = 'unified-double-layer-impact.v1'
+GRADING_VERSION = STANDARD['version']
+LEVELS = [STANDARD['levels'][f'L{i}']['name'] for i in range(1,7)]
 CARD_FIELDS = {'outcome_name', 'outcome_type', 'description', 'problem_solved', 'participating_units', 'core_members', 'related_outputs', 'key_metrics', 'baseline', 'ai_role', 'claimed_application', 'support_materials'}
 
 
@@ -114,7 +120,7 @@ class Attribution(Strict):
 
 class Assessment(Strict):
     schema_version: Literal['wu-outcome-v2.1']
-    rubric_id: Literal['wu-v2-six-levels']
+    rubric_id: Literal['unified-double-layer-impact.v1', 'wu-v2-six-levels']
     input_mode: Literal['name_only', 'name_plus_materials', 'structured_form']
     project_context: ProjectContext
     outcome_resolution: Resolution

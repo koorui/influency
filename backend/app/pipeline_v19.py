@@ -1,4 +1,4 @@
-"""Explicitly scoped handoff to the unmodified v19 evaluator."""
+"""Frozen-evidence handoff to the unified skill's seven-dimension evaluator."""
 import copy
 import importlib.util
 import json
@@ -8,7 +8,7 @@ from .pipeline_store import WaitingForInput,atomic_json
 
 
 def wrapper():
-    spec=importlib.util.spec_from_file_location('pipeline_v19_wrapper',SKILLS/'dual-layer-impact-v19/scripts/v19.py')
+    spec=importlib.util.spec_from_file_location('pipeline_v19_wrapper',SKILLS/'unified-impact-evaluation/scripts/v19.py')
     module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
     return module
 
@@ -102,6 +102,8 @@ def export_stage(inputs,outputs,folder):
     wu=outputs['wu_evaluation'];v19=outputs['v19_evaluation']
     atomic_json(folder/'wu-evaluation.json',wu)
     atomic_json(folder/'v19-evaluation.json',v19)
+    combined=combine_evaluations(wu,v19)
+    atomic_json(folder/'unified-evaluation.json',combined)
     manifest={'schema_version':'impact-pipeline-result.v1','project_id':wu['project_id'],'outcome_id':wu['outcome_id'],
               'wu':{'file':'wu-evaluation.json','rubric_id':wu['rubric_id']},
               'v19':{'file':'v19-evaluation.json','rubric_id':v19['rubric_id']},

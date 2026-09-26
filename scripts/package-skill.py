@@ -7,7 +7,7 @@ from pathlib import Path
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--install',action='store_true')
-    parser.add_argument('--skill',choices=['outcome-impact-evaluation','dual-layer-impact-v19','data-purification-ai-attribution','impact-evaluation-pipeline','project-search-verification'],default='outcome-impact-evaluation')
+    parser.add_argument('--skill',choices=['unified-impact-evaluation','data-purification-ai-attribution','impact-evaluation-pipeline','project-search-verification'],default='unified-impact-evaluation')
     args=parser.parse_args()
     root=Path(__file__).resolve().parents[1]
     skill=root/'skills'/args.skill

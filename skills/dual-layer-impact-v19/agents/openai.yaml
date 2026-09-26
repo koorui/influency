@@ -1,4 +1,0 @@
-interface:
-  display_name: "双层影响力评价 v19"
-  short_description: "调用原版v19引擎执行七维、成果综合、特定层与全局层归纳并保留底稿"
-  default_prompt: "使用 $dual-layer-impact-v19 检查指定工作区的输入条件，并按v19口径执行获授权的评价。"

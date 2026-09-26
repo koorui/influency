@@ -14,10 +14,8 @@ Design goals:
 from __future__ import annotations
 
 import base64
-import hashlib
 import json
 import re
-import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -29,7 +27,6 @@ from .config import Settings
 
 
 _FENCE_RE = re.compile(r"```(?:json)?\s*(.*?)```", re.DOTALL)
-_CACHE_WRITE_LOCK = threading.Lock()
 
 
 @dataclass
@@ -78,11 +75,6 @@ class LLMClient:
         if not self.available:
             return LLMResult(ok=False, error_type="LLMDisabled", error="LLM disabled or no API key.")
         use_model = model or self.settings.glm_model
-        cache_key = self._cache_key(use_model, system, user, temperature)
-        if use_cache:
-            cached = self._load_cache(cache_key)
-            if cached is not None:
-                return LLMResult(ok=True, text=cached, model=use_model)
         last_error = ""
         last_type = ""
         for attempt in range(max_attempts):
@@ -101,8 +93,6 @@ class LLMClient:
                     **request,
                 )
                 text = response.choices[0].message.content or ""
-                if use_cache and text:
-                    self._save_cache(cache_key, use_model, text)
                 return LLMResult(ok=True, text=text, model=use_model)
             except Exception as exc:  # noqa: BLE001 - provider raises many types
                 last_error = str(exc)[:500]
@@ -111,49 +101,9 @@ class LLMClient:
                     time.sleep(1.5 * (attempt + 1))
         return LLMResult(ok=False, model=use_model, error_type=last_type, error=last_error)
 
-    def _cache_key(self, model: str, system: str, user: str, temperature: float) -> str:
-        payload = json.dumps(
-            {
-                "cache_version": "llm-text-v1",
-                "model": model,
-                "system": system,
-                "user": user,
-                "temperature": temperature,
-            },
-            ensure_ascii=False,
-            sort_keys=True,
-        )
-        return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
-    def _cache_path(self, cache_key: str) -> Path:
-        return self.settings.output_dir / ".llm_cache" / cache_key[:2] / f"{cache_key}.json"
 
-    def _load_cache(self, cache_key: str) -> str | None:
-        path = self._cache_path(cache_key)
-        if not path.exists():
-            return None
-        try:
-            payload = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            return None
-        if payload.get("status") != "completed" or payload.get("cache_key") != cache_key:
-            return None
-        text = payload.get("text")
-        return text if isinstance(text, str) else None
 
-    def _save_cache(self, cache_key: str, model: str, text: str) -> None:
-        path = self._cache_path(cache_key)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        temporary = path.with_suffix(f".{threading.get_ident()}.tmp")
-        payload = {
-            "status": "completed",
-            "cache_key": cache_key,
-            "model": model,
-            "text": text,
-        }
-        with _CACHE_WRITE_LOCK:
-            temporary.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
-            temporary.replace(path)
 
     def vision_text(
         self,

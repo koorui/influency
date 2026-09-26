@@ -130,7 +130,9 @@ def wu_evaluation_stage(inputs,outputs,folder):
     exporter.export_artifacts(assessment,folder/'artifacts')
     if assessment.evaluation_status in ('needs_scope_confirmation','insufficient_project_context'):
         raise WaitingForInput('吴老师评价要求补充上下文或确认成果范围',assessment.model_dump())
-    return {'rubric_id':'wu-v2-six-levels','project_id':intake['project_id'],'outcome_id':intake['outcome_id'],'assessment':assessment.model_dump()}
+    return {'rubric_id':assessment.rubric_id,'rubric_version':contract.RUBRIC_VERSION,
+            'grading_standard':contract.GRADING_VERSION,'report_role':'management',
+            'project_id':intake['project_id'],'outcome_id':intake['outcome_id'],'assessment':assessment.model_dump()}
 
 
 def search_replay_stage(inputs,outputs,folder):
