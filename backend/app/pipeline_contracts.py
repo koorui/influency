@@ -32,6 +32,18 @@ class Comparison(StrictModel):
     isolated_factor_ids: list[str]
     notes: str
 
+    @model_validator(mode='after')
+    def attribution_boundary(self):
+        if not self.evidence_ids:
+            raise ValueError('比较必须引用基线与观测值的原文依据')
+        if not set(self.isolated_factor_ids).issubset(self.involved_factor_ids):
+            raise ValueError('隔离因素必须属于本次比较因素')
+        if len(set(self.isolated_factor_ids))>1:
+            raise ValueError('一个对照不能同时证明多个因素各自的独立贡献；请拆分独立对照或保留组合效果')
+        if self.baseline.unit.strip()!=self.observed.unit.strip():
+            raise ValueError('比较两侧单位不一致，请核实换算依据')
+        return self
+
 
 class PreparedClaim(StrictModel):
     id: str
@@ -147,6 +159,9 @@ class AttributionPreparation(StrictModel):
 def attribution_input(preparation: AttributionPreparation,replay: SearchReplay):
     if (preparation.project_id,preparation.outcome_id)!=(replay.project_id,replay.outcome_id):
         raise ValueError('Search回放与当前归因对象不一致')
+    # Validate this boundary for direct/replayed inputs as well as model intake.
+    for value in preparation.comparisons:
+        Comparison.model_validate(value)
     evidence=[*preparation.evidence,*replay.evidence]
     ids=[e.id for e in evidence]
     if len(set(ids))!=len(ids):raise ValueError('项目与Search证据ID冲突，不能覆盖')
