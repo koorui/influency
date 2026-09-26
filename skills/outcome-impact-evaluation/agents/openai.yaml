@@ -1,4 +1,0 @@
-interface:
-  display_name: "科研成果影响力评价"
-  short_description: "按吴老师v2规则定位成果、核验证据并输出七维底稿与六级影响力报告"
-  default_prompt: "使用 $outcome-impact-evaluation 根据当前项目材料评价指定成果，保留原始证据和待确认边界。"

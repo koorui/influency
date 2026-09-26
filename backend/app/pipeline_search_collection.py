@@ -3,7 +3,7 @@ import importlib.util
 import json
 import re
 import sys
-from datetime import datetime
+from datetime import datetime,date
 from typing import Literal,Union
 from pydantic import BaseModel, ConfigDict, Field, model_validator, create_model
 from .pipeline_model import execute_json_stage
@@ -110,6 +110,17 @@ def with_actual_queries(analysis, collected):
     """Query execution facts come from collector receipts, never model transcription."""
     values = analysis.model_dump(mode='json')
     values['research_records']=normalize_records(values.get('research_records',[]))
+    selected={s['id'] for s in values['sources']}
+    missing=[]
+    for check in values['checks']:
+        unknown=set(check['evidence_ids'])-selected
+        if unknown:missing.append(f"checks/{check['id']}: {', '.join(sorted(unknown))}")
+    for n,row in enumerate(values['research_records']):
+        unknown=set(row['source_ids'])-selected
+        if unknown:missing.append(f"research_records/{n}: {', '.join(sorted(unknown))}")
+    if missing:
+        raise ValueError('引用的候选来源未列入 sources：'+'; '.join(missing)+
+                         '。请依据实际候选和原文补全来源记录，或经重新判断修正引用；不得虚构来源或仅为通过校验删去证据。')
     bank = {e['id']: e for e in excerpt_bank(collected)}
     candidates={c['id']:c for c in collected['search']['candidates']}
     queries_by_id={q['id']:q for q in collected['search']['queries']}
@@ -123,6 +134,9 @@ def with_actual_queries(analysis, collected):
         if ref is not None and (ref not in bank or bank[ref]['source_id'] != source['id']):
             raise ValueError('引文片段不属于该来源')
         source['quote'] = bank[ref]['text'] if ref is not None else ''
+        publication_dates=primary.get(source['id'],{}).get('publication_dates',[])
+        if source.get('first_public_date') is None and publication_dates:
+            source['first_public_date']=min(publication_dates)
     source_ids = {s['id'] for s in values['sources']}
     queries = []
     for receipt in collected['search']['queries']:
@@ -141,7 +155,9 @@ def collect_for_stage(payload, folder):
     planner.mkdir()
     plan = execute_json_stage(planner, SearchPlan, payload,
         'Plan 8-12 targeted public searches covering all five modules. No network or shell requests. '
-        'Use exact paper titles and distinctive scientific terms from original claims. '
+        'Read original_source_context, not only the condensed outcome card. Extract known paper titles, model names, DOI/article IDs and repository links. '
+        'Use 2-5 distinctive scientific terms per query, separate short topic queries from exact names; avoid long AND-like keyword strings. '
+        'For a known paper, add exact DOI/title searches. Do not equate a cited base model with the evaluated downstream outcome. '
         'When input contains a DOI, include the COMPLETE DOI as a standalone Crossref query (e.g. 10.xxxx/suffix). '
         'Use short title-only queries for known papers; do not append every topic, author and metric to a single query. '
         'Generic OCNet finds unrelated computer vision projects; qualify with organic chemistry and authors. '
@@ -151,7 +167,18 @@ def collect_for_stage(payload, folder):
     collector = load_script('collect_public_search')
     parser = load_script('parse_public_search')
     archiver = load_script('archive_public_sources')
-    collector.collect(plan.model_dump(), folder / 'public-search')
+    planned=plan.model_dump()
+    # Material identifiers are discovery clues, never automatically approved evidence.
+    context=json.dumps(payload.get('original_source_context',[]),ensure_ascii=False)
+    identifiers=re.findall(r'10\.\d{4,9}/[A-Za-z0-9._;()/:-]+',context)
+    identifiers += ['10.1038/'+x for x in re.findall(r'\bs\d{5}-\d{3}-\d{5}-[a-z0-9]\b',context)]
+    existing={q['query'].strip().lower() for q in planned['queries']}
+    for doi in list(dict.fromkeys(identifiers))[:6]:
+        doi=doi.rstrip('.,;)')
+        if doi.lower() not in existing:
+            planned['queries'].append({'module':'prior_work','channel':'crossref','query':doi});existing.add(doi.lower())
+    atomic_json(folder/'executed-plan.json',planned)
+    collector.collect(planned, folder / 'public-search')
     parsed = parser.parse_archive(folder / 'public-search')
     atomic_json(folder / 'candidates.json', parsed)
     if not any(q['parse_status'] in ('parsed', 'organic_headings_only') for q in parsed['queries']):
@@ -166,11 +193,37 @@ def collect_for_stage(payload, folder):
     by_id = {c['id']: c for c in parsed['candidates']}
     if len(set(selected.candidate_ids)) != len(selected.candidate_ids) or any(i not in by_id for i in selected.candidate_ids):
         raise ValueError('原文选择引用未知或重复候选ID')
-    receipts = archiver.archive_sources([{'id': i, 'url': by_id[i]['url']} for i in selected.candidate_ids], folder / 'primary-sources')
+    receipts = archiver.archive_sources([{'id': i, 'url': by_id[i]['url'],'linked_urls':by_id[i].get('linked_urls',[])} for i in selected.candidate_ids], folder / 'primary-sources')
     texts = {}
     for record in receipts['sources']:
         if record.get('text_file'):
             texts[record['id']] = (folder / 'primary-sources' / record['text_file']).read_text(encoding='utf-8')
+    # One bounded recovery pass when the first plan produced no usable primary body.
+    if not any(r.get('body_usable') for r in receipts['sources']):
+        retry=folder/'query-recovery';retry.mkdir()
+        replanned=execute_json_stage(retry,SearchPlan,
+            {'task':payload,'previous_queries':parsed['queries'],'selection':selected.model_dump(),'source_receipts':receipts},
+            'The first search round yielded no readable relevant primary body. Plan 5-8 revised short queries covering five modules. '
+            'Use original_source_context to identify exact cited titles, DOI, authors, base models and their repositories. '
+            'Separate exact-outcome searches from related prior-work searches. Avoid repeating failed queries. No network requests.',
+            skill_root=SEARCH_SKILL_ROOT,inline_input=True)
+        retry_plan={'queries':[q for q in replanned.model_dump()['queries'] if (q['channel'],q['query']) not in {(r['channel'],r['query']) for r in parsed['queries']}]}
+        if retry_plan['queries']:
+            collector.collect(retry_plan,folder/'public-search-recovery',id_offset=len(parsed['queries']))
+            more=parser.parse_archive(folder/'public-search-recovery')
+            parsed['queries']+=more['queries'];parsed['candidates']+=more['candidates']
+            choose=folder/'source-selection-recovery';choose.mkdir()
+            selection=execute_json_stage(choose,Selection,{'task':payload,'search':more},
+                'Select relevant primary sources for this outcome or explicitly related prior work. Exclude off-topic hits. '
+                'Return only candidate IDs present in this recovery search. Do not claim verification.',skill_root=SEARCH_SKILL_ROOT,inline_input=True)
+            new={c['id']:c for c in more['candidates']}
+            if len(set(selection.candidate_ids))!=len(selection.candidate_ids) or any(i not in new for i in selection.candidate_ids):
+                raise ValueError('补充检索选择了不存在或重复的来源')
+            extra=archiver.archive_sources([{'id':i,'url':new[i]['url'],'linked_urls':new[i].get('linked_urls',[])} for i in selection.candidate_ids],folder/'primary-sources-recovery')
+            receipts['sources']+=extra['sources']
+            for record in extra['sources']:
+                if record.get('text_file'):texts[record['id']]=(folder/'primary-sources-recovery'/record['text_file']).read_text(encoding='utf-8')
+            atomic_json(folder/'candidates.json',parsed)
     return {'search': parsed, 'primary_source_receipts': receipts, 'primary_source_texts': texts,
             'selection': selected.model_dump()}
 

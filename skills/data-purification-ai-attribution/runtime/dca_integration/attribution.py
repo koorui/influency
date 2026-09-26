@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from .common import finite_number, file_sha256, read_json, require_keys, require_unique_ids, write_csv, write_json
+from .common import finite_number, read_json, require_keys, require_unique_ids, write_csv, write_json
 from .reports import render_attribution_report, render_unresolved_report
 
 
@@ -286,7 +286,6 @@ def run_attribution(input_path: str | Path, output_dir: str | Path) -> dict[str,
         "evidence_index": data["evidence"],
         "summary": "；".join(conclusion_parts) + "。",
         "boundary": "本结果基于已提供的结构化项目证据、比较基线和外部Search发现，只形成辅助归因判断；因素未被隔离、结果未改善或可比性不足时，均不得表述为正向独立净贡献。",
-        "input_sha256": file_sha256(input_path),
     }
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
@@ -296,7 +295,6 @@ def run_attribution(input_path: str | Path, output_dir: str | Path) -> dict[str,
         "project": data["project"],
         "target": data["target"],
         "items": unresolved,
-        "input_sha256": result["input_sha256"],
     })
     write_csv(output / "contribution_result.csv", factor_results, [
         "factor_id", "factor_name", "factor_type", "role", "role_in_attribution",
@@ -315,7 +313,6 @@ def run_attribution(input_path: str | Path, output_dir: str | Path) -> dict[str,
     manifest = {
         "schema_version": "dca-attribution-run/v1",
         "status": "completed",
-        "input_sha256": result["input_sha256"],
         "factor_count": len(factor_results),
         "comparison_count": len(comparisons),
         "unresolved_count": len(unresolved),

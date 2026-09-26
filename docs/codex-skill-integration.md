@@ -1,6 +1,8 @@
+> 历史集成记录。当前技能已融合为 `skills/unified-impact-evaluation`；执行与打包以该目录 SKILL.md 和当前 README 为准，本文历史安装位置和验证结果不代表当前状态。
+
 # Codex + 吴老师 v2 Skill 接入
 
-本次使用 `9.23/outcome-impact-evaluation` 中完整 v2 规则，源目录未改动。平台维护的可执行包位于 `skills/outcome-impact-evaluation`，已安装到本机 `C:/Users/29821/.codex/skills/outcome-impact-evaluation`；便携包为 `dist/outcome-impact-evaluation.zip`。
+本次使用 `9.23/unified-impact-evaluation` 中完整 v2 规则，源目录未改动。平台维护的可执行包位于 `skills/unified-impact-evaluation`，已安装到本机 `C:/Users/29821/.codex/skills/unified-impact-evaluation`；便携包为 `dist/unified-impact-evaluation.zip`。
 
 ## 规则选择与差异
 
@@ -52,13 +54,13 @@
 .\.venv\Scripts\python.exe scripts/package-skill.py
 
 # 独立校验结果，可附输入目录核对逐字引用
-.\.venv\Scripts\python.exe skills/outcome-impact-evaluation/scripts/validate_result.py evaluation-result.json --input input.json
+.\.venv\Scripts\python.exe skills/unified-impact-evaluation/scripts/validate_result.py evaluation-result.json --input input.json
 
 # 生成离线报告和底稿
-.\.venv\Scripts\python.exe skills/outcome-impact-evaluation/scripts/export_artifacts.py evaluation-result.json --output artifacts
+.\.venv\Scripts\python.exe skills/unified-impact-evaluation/scripts/export_artifacts.py evaluation-result.json --output artifacts
 ```
 
-独立 Skill 的 Python 工具需要 Pydantic 2.7+；平台 requirements 已覆盖。安装后可在 Codex 会话中使用 `$outcome-impact-evaluation` 并指定项目材料。平台执行器始终引用冻结副本的实际路径，不依赖当前桌面会话是否刷新技能列表。
+独立 Skill 的 Python 工具需要 Pydantic 2.7+；平台 requirements 已覆盖。安装后可在 Codex 会话中使用 `$unified-impact-evaluation` 并指定项目材料。平台执行器始终引用冻结副本的实际路径，不依赖当前桌面会话是否刷新技能列表。
 
 Docker 配置挂载 `/skills`，但标准 Python 容器不包含宿主机 Windows Codex CLI 或认证。全容器部署要另行配置 Linux Codex 执行环境；不能将本机接通等同于 Docker worker 已接通。
 

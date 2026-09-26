@@ -1,7 +1,6 @@
 """Normalize archived public-index responses without upgrading metadata to evidence."""
 import argparse
 import base64
-import hashlib
 from html.parser import HTMLParser
 import json
 from pathlib import Path
@@ -127,7 +126,6 @@ def parse_archive(folder):
                 if path.parent != folder:
                     raise ValueError('Receipt file must be inside its archive')
                 raw = path.read_bytes()
-                query['response_sha256'] = hashlib.sha256(raw).hexdigest()
                 items, status = parse_items(receipt['channel'], raw.decode('utf-8-sig'))
                 query['parse_status'] = status
                 for n, item in enumerate(items, 1):
@@ -136,7 +134,7 @@ def parse_archive(folder):
                     identifier = f"{receipt['id']}-S{n:02d}"
                     candidates.append({**item, 'id': identifier, 'query_id': receipt['id'],
                                        'module': receipt['module'], 'access_status': 'metadata_only',
-                                       'index_file': receipt['file'], 'index_sha256': query['response_sha256']})
+                                       'index_file': receipt['file']})
                     query['candidate_ids'].append(identifier)
                 # Zero parsed HTML headings can be a challenge page or layout change, not a negative search.
                 if not query['candidate_ids'] and receipt['channel'] == 'bing':

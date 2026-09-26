@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field,SecretStr
 
@@ -22,6 +23,7 @@ class Settings(BaseSettings):
     codex_model: str = 'gpt-6-astra'
     codex_reasoning_effort: str = 'medium'
     codex_timeout_seconds: int = 480
+    codex_sandbox_mode: Literal['read-only','workspace-write','danger-full-access'] = 'read-only'
     codex_search: bool = True
     codex_max_input_chars: int = 600000
     v19_api_key: SecretStr = SecretStr('')

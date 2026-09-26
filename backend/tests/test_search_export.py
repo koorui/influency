@@ -9,7 +9,7 @@ def test_required_report_retains_unknown_dates_and_does_not_invent_metrics(tmp_p
     data={'schema_version':'project-search.v1','project_id':'P1','outcome_id':'A1','project_start_date':'2025-01-01',
         'review_cutoff':'2026-01-01','cutoff_basis':'原报告统计截止','search_date':'2026-09-25',
         'modules':[{'id':m,'status':'blocked','summary':'缺少核验依据','limitations':['未取得充分证据']} for m in sorted(contract.MODULES)],
-        'sources':[{'id':'Q001-S01','module':'sota','title':'A paper','url':'https://example.org/paper','publisher':'Journal',
+        'sources':[{'id':'Q001-S01','module':'indicator','title':'A paper','url':'https://example.org/paper','publisher':'Journal',
             'first_public_date':'2025-02-01','event_date':None,'accessed_at':'2026-09-25','access_status':'full_text',
             'quote':'A real passage.','claim_ids':['C1'],'relationship':'unknown','supports':'Background only','does_not_prove':'No same-protocol comparison',
             'confidence':dict.fromkeys(['object_match','independence','protocol','time'],'unknown')}],

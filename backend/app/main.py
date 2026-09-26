@@ -1,4 +1,3 @@
-import hashlib
 import io
 import json
 import unicodedata
@@ -34,7 +33,7 @@ app.include_router(submission_router)
 def pipeline_report(id: str, db: DBSession = Depends(get_db), user: User = Depends(admin)):
     from uuid import UUID
     from .pipeline_api import job_or_404,directory
-    from .pipeline_store import PipelineStore,fingerprint
+    from .pipeline_store import PipelineStore
     from .skill_loader import contract
     from .codex_adapter import to_report
     try: validated_id=UUID(id)
@@ -46,7 +45,6 @@ def pipeline_report(id: str, db: DBSession = Depends(get_db), user: User = Depen
     path=(store.root/stage['output']).resolve()
     if not path.is_relative_to(store.root):raise HTTPException(409,'报告路径异常')
     value=json.loads(path.read_text(encoding='utf-8'))
-    if fingerprint(value)!=stage['output_hash']:raise HTTPException(409,'报告内容与存档哈希不一致')
     assessment=contract.Assessment.model_validate(value['assessment'])
     report=to_report(assessment,[assessment.outcome_resolution.canonical_name or state['inputs']['title']])
     search_record=state['stages']['search_replay']
@@ -54,11 +52,9 @@ def pipeline_report(id: str, db: DBSession = Depends(get_db), user: User = Depen
         search_path=(store.root/search_record['output']).resolve()
         if not search_path.is_relative_to(store.root):raise HTTPException(409,'检索底稿路径异常')
         search_output=json.loads(search_path.read_text(encoding='utf-8'))
-        if fingerprint(search_output)!=search_record['output_hash']:raise HTTPException(409,'检索底稿与存档哈希不一致')
         raw=search_output.get('raw_result',{})
         if raw.get('review_cutoff'):report.review_window=f"外部证据核验截至 {raw['review_cutoff']}。{raw.get('cutoff_basis','')}"
-    source_fingerprint=fingerprint({'wu_output':stage['output_hash'],'search_output':search_record.get('output_hash') if search_record['status']=='succeeded' else None})
-    return {'pipeline_id':str(validated_id),'pipeline_status':state['status'],'review_status':'draft','payload':report.model_dump(),'source_fingerprint':source_fingerprint}
+    return {'pipeline_id':str(validated_id),'pipeline_status':state['status'],'review_status':'draft','payload':report.model_dump()}
 
 
 @app.post('/api/admin/pipeline-reports/{id}/draft',status_code=201)
@@ -72,72 +68,17 @@ def pipeline_report_draft(id: str,db: DBSession=Depends(get_db),user: User=Depen
     response=pipeline_report(str(identifier),db,user)
     payload=response['payload']
     if existing:
-        if existing.source_fingerprint==response['source_fingerprint']:return serialize(existing,('search_text',))
-        if existing.source_fingerprint is None and Evaluation.model_validate(existing.payload).model_dump()==payload:
-            existing.source_fingerprint=response['source_fingerprint'];db.commit();return serialize(existing,('search_text',))
         if existing.status!='draft':raise HTTPException(409,'工作流结果已更新，请先撤回已发布报告，再导入新草稿')
     if payload['evaluation_status'] in ('needs_scope_confirmation','insufficient_project_context'):
         raise HTTPException(409,'当前成果范围或上下文尚不明确，不能转入报告审核')
     if existing:
         row=existing;row.payload=payload;row.title=payload['title'];row.search_text=search_text(payload);row.revision+=1
-        row.source_fingerprint=response['source_fingerprint']
     else:
-        row=Result(pipeline_id=str(identifier),title=payload['title'],payload=payload,search_text=search_text(payload),source_fingerprint=response['source_fingerprint'])
+        row=Result(pipeline_id=str(identifier),title=payload['title'],payload=payload,search_text=search_text(payload))
         db.add(row);db.flush()
     db.add(ResultVersion(result_id=row.id,revision=row.revision,payload=payload,editor=user.id))
     audit(db,user,'pipeline_report_refresh' if existing else 'pipeline_report_draft',row.id);db.commit()
     return serialize(row,('search_text',))
-
-
-@app.get('/api/admin/pipeline-reports/{id}/double-layer')
-def pipeline_double_layer(id: str, db: DBSession = Depends(get_db), user: User = Depends(admin)):
-    """Return the unified, reviewable double-layer evaluation package.
-
-    The management layer and D1-D7 evidence layer share L1-L6 semantics while
-    retaining independent evidence and provenance. They are deliberately not
-    averaged or numerically merged.
-    """
-    from uuid import UUID
-    from .pipeline_api import job_or_404, directory
-    try:
-        identifier = UUID(id)
-    except ValueError:
-        raise HTTPException(422, '工作流编号无效')
-    job_or_404(db, identifier)
-    state = __import__('app.pipeline_store', fromlist=['PipelineStore']).PipelineStore(directory(identifier)).read()
-    stages = state['stages']
-    if stages['wu_evaluation']['status'] != 'succeeded' or stages['v19_evaluation']['status'] != 'succeeded':
-        raise HTTPException(409, '双层评价尚未完成，暂不可生成统一结果')
-    import hashlib
-    def read_stage(name):
-        from .pipeline_store import fingerprint
-        record = stages[name]
-        path = (directory(identifier) / record['output']).resolve()
-        if not path.is_relative_to(directory(identifier)):
-            raise HTTPException(409, '阶段底稿路径异常')
-        value = json.loads(path.read_text(encoding='utf-8'))
-        if fingerprint(value) != record['output_hash']:
-            raise HTTPException(409, '阶段底稿哈希校验失败')
-        return value
-    wu = read_stage('wu_evaluation')
-    v19 = read_stage('v19_evaluation')
-    assessment = wu.get('assessment') or {}
-    result = v19.get('result') or {}
-    run = result.get('project_synthesis') or result.get('project') or {}
-    levels = {
-        'management_level': (assessment.get('level_name') or assessment.get('level')),
-        'dimension_level': (run.get('impact_level') or {}).get('level') if isinstance(run.get('impact_level'), dict) else None,
-        'scope_level': (run.get('scope_impact_level') or {}).get('level') if isinstance(run.get('scope_impact_level'), dict) else None,
-    }
-    return {
-        'evaluation_name': '双层影响力评价',
-        'rubric_version': 'unified-double-layer-impact.v1',
-        'pipeline_id': str(identifier), 'pipeline_status': state['status'],
-        'review_status': 'draft', 'levels': levels,
-        'management_layer': {'rubric_id': wu.get('rubric_id'), 'assessment': assessment},
-        'dimension_layer': {'rubric_id': v19.get('rubric_id'), 'result': result},
-        'rule': '两层共用L1-L6语义，证据独立保存；等级不相加、不平均，差异交管理员审核。',
-    }
 
 
 @app.middleware('http')
@@ -215,13 +156,13 @@ def me(user: User = Depends(current_user)):
     return serialize(user, ('password_hash',))
 
 
-@app.get('/api/results')
+@app.get('/api/results', dependencies=[Depends(current_user)])
 def published(db: DBSession = Depends(get_db)):
     rows = db.scalars(select(Result).where(Result.status == 'published').order_by(Result.published_at.desc()).limit(30))
     return [serialize(x, ('search_text',)) for x in rows]
 
 
-@app.get('/api/results/{id}')
+@app.get('/api/results/{id}', dependencies=[Depends(current_user)])
 def published_result(id: str, db: DBSession = Depends(get_db)):
     row = get_or_404(db, Result, id)
     if row.status != 'published':
@@ -229,7 +170,7 @@ def published_result(id: str, db: DBSession = Depends(get_db)):
     return serialize(row, ('search_text',))
 
 
-@app.get('/api/projects/suggestions')
+@app.get('/api/projects/suggestions', dependencies=[Depends(current_user)])
 def project_suggestions(q: str = Query(default='', max_length=200), db: DBSession = Depends(get_db)):
     statement = select(Result).where(Result.status == 'published')
     key = normalize(q)
@@ -240,7 +181,7 @@ def project_suggestions(q: str = Query(default='', max_length=200), db: DBSessio
              'category': row.payload['category'], 'is_demo': row.payload.get('is_demo', False)} for row in rows]
 
 
-@app.post('/api/search')
+@app.post('/api/search', dependencies=[Depends(current_user)])
 def fixed_search(body: FixedSearchInput, request: Request, response: Response, db: DBSession = Depends(get_db)):
     row = db.scalar(select(Result).where(Result.id == str(body.project_id)).with_for_update())
     if not row or row.status != 'published':
@@ -255,7 +196,7 @@ def fixed_search(body: FixedSearchInput, request: Request, response: Response, d
             'message': '表单已保存，当前展示已有评价；未执行新的模型核验。'}
 
 
-@app.get('/api/queries')
+@app.get('/api/queries', dependencies=[Depends(current_user)])
 def my_queries(request: Request, response: Response, db: DBSession = Depends(get_db)):
     who = owner(request, response)
     rows = db.scalars(select(QueryRecord).where(QueryRecord.owner == who).order_by(QueryRecord.created_at.desc()).limit(100))
@@ -267,32 +208,7 @@ def all_queries(db: DBSession = Depends(get_db), user: User = Depends(admin)):
     return [serialize(row, ('owner',)) for row in db.scalars(select(QueryRecord).order_by(QueryRecord.created_at.desc()).limit(200))]
 
 
-@app.post('/api/admin/search')
-def search(body: SearchInput, request: Request, response: Response, db: DBSession = Depends(get_db), user: User = Depends(admin)):
-    query = normalize(body.query)
-    if not query:
-        raise HTTPException(422, '请输入有效关键词')
-    # Contains uses escaped LIKE: user % and _ are literal characters.
-    matches = list(db.scalars(select(Result).where(Result.status == 'published',
-        or_(*[Result.search_text.contains(word, autoescape=True) for word in query.split()])).limit(50)))
-    if matches:
-        matches.sort(key=lambda x: (normalize(x.title) == query, sum(word in x.search_text for word in query.split())), reverse=True)
-        return {'results': [serialize(x, ('search_text',)) for x in matches], 'ticket': None}
-    who = owner(request, response)
-    active_key = hashlib.sha256(f'{who}\0{query}'.encode()).hexdigest()
-    ticket = db.scalar(select(Ticket).where(Ticket.active_key == active_key))
-    if not ticket:
-        ticket = Ticket(owner=who, query=body.query.strip(), normalized_query=query, active_key=active_key)
-        db.add(ticket)
-        try:
-            db.commit()
-        except IntegrityError:
-            db.rollback()
-            ticket = db.scalar(select(Ticket).where(Ticket.active_key == active_key))
-    return {'results': [], 'ticket': serialize(ticket, ('owner', 'active_key'))}
-
-
-@app.get('/api/tickets')
+@app.get('/api/tickets', dependencies=[Depends(current_user)])
 def my_tickets(request: Request, response: Response, db: DBSession = Depends(get_db)):
     who = owner(request, response)
     return [serialize(x, ('owner', 'active_key')) for x in db.scalars(select(Ticket).where(Ticket.owner == who).order_by(Ticket.created_at.desc()).limit(100))]
@@ -409,7 +325,7 @@ def _store_material(db, user, filename: str, content: bytes, extracted: str):
     path = root / key
     try:
         path.write_bytes(content)
-        row = Material(filename=filename, storage_key=key, sha256=hashlib.sha256(content).hexdigest(), size=len(content), text=extracted, uploaded_by=user.id)
+        row = Material(filename=filename, storage_key=key, size=len(content), text=extracted, uploaded_by=user.id)
         db.add(row)
         db.flush()
     except Exception:
@@ -446,7 +362,7 @@ def upload_submission_materials(files: list[UploadFile] = File(...), db: DBSessi
 
 
 @app.post('/api/admin/materials/batch', status_code=207)
-def upload_batch(files: list[UploadFile] = File(...), db: DBSession = Depends(get_db), user: User = Depends(admin), purpose: Literal['project','reference','instruction'] = Form('project')):
+def upload_batch(files: list[UploadFile] = File(...), db: DBSession = Depends(get_db), user: User = Depends(admin), purpose: Literal['project','reference','instruction'] = Form('project'), project_id: str | None = None):
     """Accept multiple files, directory uploads (webkitRelativePath) and ZIP archives.
     Each extracted supported file becomes a normal Material row; rejected entries do not abort valid siblings.
     """
@@ -473,6 +389,8 @@ def upload_batch(files: list[UploadFile] = File(...), db: DBSession = Depends(ge
             with db.begin_nested():
                 row=_store_material(db,user,filename[:255],content,extracted)
                 row.purpose=purpose
+                row.project_id=project_id
+                row.use_in_workflow=int(purpose=='project')
                 db.flush()
             accepted.append(serialize(row,('storage_key','text'))|{'status':'accepted'})
         except Exception as exc:
@@ -659,10 +577,6 @@ def publish(id: str, body: RevisionInput, db: DBSession = Depends(get_db), user:
         from .pipeline_api import job_or_404
         job_or_404(db,preview.pipeline_id,True)
     row = locked_result(db, id, body.revision)
-    if row.pipeline_id:
-        current=pipeline_report(row.pipeline_id,db,user)
-        if row.source_fingerprint!=current['source_fingerprint']:
-            raise HTTPException(409,'工作流来源已变化，请重新转入报告审核后发布，不能发布旧草稿')
     Evaluation.model_validate(row.payload)
     for evidence in row.payload.get('evidence',[]):
         if evidence.get('material_id'):
@@ -711,3 +625,15 @@ def versions(id: str, db: DBSession = Depends(get_db), user: User = Depends(admi
 @app.get('/api/admin/audit')
 def audits(db: DBSession = Depends(get_db), user: User = Depends(admin)):
     return [serialize(x) for x in db.scalars(select(Audit).order_by(Audit.created_at.desc()).limit(100))]
+
+
+# Retired entry points cannot bypass project authorization or create single tasks.
+_retired_exact = {'/api/results','/api/results/{id}','/api/projects/suggestions','/api/search',
+    '/api/queries','/api/tickets','/api/submission-materials/batch','/api/admin/search',
+    '/api/admin/materials','/api/admin/materials/batch','/api/admin/pipeline-reports/{id}/draft'}
+_retired_prefixes = ('/api/submissions','/api/admin/tasks','/api/admin/results')
+app.router.routes[:] = [route for route in app.router.routes
+    if getattr(route,'path','') not in _retired_exact and not getattr(route,'path','').startswith(_retired_prefixes)]
+from .project_api import router as project_router
+app.include_router(project_router)
+app.router.routes[:] = [r for r in app.router.routes if not (getattr(r,'path','').startswith('/api/admin/pipelines') and 'GET' not in getattr(r,'methods',set()))]

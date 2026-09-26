@@ -8,7 +8,7 @@ class EmptyAnalysis(StrictModel):
 
 class Branch(StrictModel):
     branch_id: str
-    status: Literal['明确成立','部分成立','尚未形成','待核验','不适用']
+    status: Literal['明确成立','部分成立','尚未形成','本轮未体现','不适用']
     conclusion: str
     decisive_source_ids: list[str]
 
@@ -77,13 +77,13 @@ class AIAnalysis(StrictModel):
     source_ids: list[str]
 
 class Grade(StrictModel):
-    level: Literal['G1','G2','G3','G4','G5','待确认']
+    level: Literal['G1','G2','G3','G4','G5']
     reason: str
     source_ids: list[str]
     gap_to_next: str
 
 class DimensionReply(StrictModel):
-    status: Literal['明确成立','部分成立','尚未形成','待核验','不适用']
+    status: Literal['明确成立','部分成立','尚未形成','本轮未体现','不适用']
     branch_judgments: list[Branch] = Field(min_length=3,max_length=3)
     core_position: str
     conclusion: str
@@ -104,7 +104,7 @@ class DimensionReply(StrictModel):
     grade: Grade
 
 class ImpactLevel(StrictModel):
-    level: Literal['L1','L2','L3','L4','L5','L6','待确认']
+    level: Literal['L1','L2','L3','L4','L5','L6']
     reason: str
     source_ids: list[str]
     gap_to_next: str
@@ -158,7 +158,7 @@ class Portfolio(StrictModel):
     D7: PortfolioEntry
 
 class Layer(StrictModel):
-    status: Literal['强','较强','初步形成','尚未形成','待核验']
+    status: Literal['强','较强','初步形成','尚未形成','本轮未体现']
     conclusion: str
     basis: list[str]
     limitations: list[str]
@@ -175,7 +175,7 @@ class CollaborationChain(StrictModel):
     repeat_source_ids: list[str]
 
 class SystemCollaboration(StrictModel):
-    status: Literal['只有设计关系','发生真实输入输出','形成跨课题任务链','形成反馈闭环','持续重复运行','待核验']
+    status: Literal['只有设计关系','发生真实输入输出','形成跨课题任务链','形成反馈闭环','持续重复运行','本轮未体现']
     conclusion: str
     evidence: list[str]
     gaps: list[str]

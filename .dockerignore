@@ -1,0 +1,14 @@
+**
+!backend/
+!backend/**
+!skills/
+!skills/**
+backend/storage/
+backend/tests/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/*.db
+**/*.log
+**/.env
+**/auth.json

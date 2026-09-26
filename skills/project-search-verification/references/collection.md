@@ -1,3 +1,7 @@
+# 可选HTTP归档工具
+
+当前主流程见[CLI原生研究](cli-research.md)。以下脚本由CLI按需调用，不决定查询策略。
+
 # 程序采集与原文留存
 
 在无法使用原生检索工具时，以实际 HTTP 请求作为本次检索记录。脚本支持 Python 3.11+；运行环境预先安装requirements.txt中的依赖，JSON契约使用Pydantic，PDF提取使用pypdf。目录必须是新目录，避免覆盖前次证据。

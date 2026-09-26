@@ -1,0 +1,4 @@
+interface:
+  display_name: "统一成果影响力评价"
+  short_description: "融合成果建卡、管理者报告与七维双层分析，共用六级标准并保留证据"
+  default_prompt: "使用 $unified-impact-evaluation 根据当前输入执行成果定位、管理者评价或七维双层分析，保留证据与适用边界。"

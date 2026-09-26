@@ -127,7 +127,10 @@ class SearchResult(Strict):
 
 def time_status(source:Source,cutoff:date):
     if any(d and d>cutoff for d in [source.first_public_date,source.event_date]):return 'excluded_after_cutoff'
-    if source.first_public_date is None or source.event_date is None:return 'unknown_date'
+    if source.first_public_date is None:return 'unknown_date'
+    # A dated technical publication can establish prior work / published methods.
+    # Independent use, adoption and project-indicator events still need their own date.
+    if source.event_date is None and source.module not in ('prior_work','sota'):return 'unknown_date'
     if source.access_status!='full_text':return 'not_verified'
     return 'eligible'
 
