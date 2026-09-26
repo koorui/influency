@@ -4,7 +4,7 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   const data = await response.json().catch(() => ({}))
   if (!response.ok) {
     const detail = data.detail
-    throw new Error(typeof detail === 'string' ? detail : Array.isArray(detail) ? detail.map((x: {msg: string}) => x.msg).join('；') : `请求失败（${response.status}）`)
+    throw new Error(typeof detail === 'string' ? detail : Array.isArray(detail) ? detail.map((x: {msg: string}) => x.msg.replace(/^Value error,\s*/i, '')).join('；') : `请求失败（${response.status}）`)
   }
   return data
 }

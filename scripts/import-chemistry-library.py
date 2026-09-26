@@ -1,58 +1,81 @@
-"""Ingest the provided original chemistry directory, preserving bytes and recording roles."""
-import hashlib
+"""Import chemistry originals into the administrator material library without running evaluation."""
+import argparse
+from datetime import datetime, timezone
 import json
-import os
 from pathlib import Path
 import sys
-ROOT=Path(__file__).resolve().parents[1]
-sys.path.insert(0,str(ROOT/'backend'))
-from app.db import Session
-from app.models import Material,User,Audit
-from app.main import _extract_text,_store_material
-from app.config import settings
-from app.pipeline_store import atomic_json,timestamp
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'backend'))
+
 from sqlalchemy import select
+from app.config import settings
+from app.db import Session
+from app.main import SUPPORTED_MATERIALS, _extract_text, _store_material
+from app.models import Material, User
 
-def sha(path):
-    h=hashlib.sha256()
-    with path.open('rb') as f:
-        for block in iter(lambda:f.read(1024*1024),b''):h.update(block)
-    return h.hexdigest()
 
-if __name__=='__main__':
-    source=ROOT.parent/'9.23/有机化学';os.chdir(ROOT/'backend')
-    destination=Path(settings().storage_dir).resolve()/'chemistry-library';destination.mkdir(exist_ok=True)
-    records=[];classified=[]
-    with Session() as db:
-        user=db.scalar(select(User).where(User.username=='admin',User.role=='admin'))
-        if not user:raise ValueError('管理员不存在')
-        for path in sorted(source.iterdir()):
-            if not path.is_file():continue
-            digest=sha(path)
-            row=db.scalar(select(Material).where(Material.sha256==digest).order_by(Material.created_at).limit(1))
-            action='existing'
-            if not row:
-                content=path.read_bytes();text=_extract_text(path.name,content)
-                row=_store_material(db,user,'有机化学/'+path.name,content,text);action='imported'
-            purpose='instruction' if path.name=='AI4S项目-里程碑-测试大纲修改要求.docx' else 'project'
-            if row.purpose!=purpose:
-                row.purpose=purpose;db.add(Audit(actor=user.id,action='material_purpose_'+purpose,target=row.id))
-            stored=Path(settings().storage_dir).resolve()/row.storage_key
-            if not stored.is_file() or sha(stored)!=digest:raise ValueError('库中原件与交付文件不一致：'+path.name)
-            records.append({'source':str(path),'material_id':row.id,'filename':row.filename,'sha256':digest,'bytes':path.stat().st_size,
-                            'text_characters':len(row.text),'purpose':purpose,'action':action,'original_copy_verified':True})
-            db.commit();print(json.dumps({'file':path.name,'action':action,'purpose':purpose},ensure_ascii=False),flush=True)
-        # Exact byte matching to the explicitly designated reference directory;
-        # do not classify arbitrary user files solely by a similar filename.
-        references=ROOT.parent/'9.23/项目成果search'
-        reference_hashes={sha(p):str(p) for p in references.rglob('*.docx') if p.name in ('综合评估.docx','凝练评估.docx','送检样例.docx')}
-        for row in db.scalars(select(Material)):
-            if row.sha256 in reference_hashes:
-                if row.purpose!='reference':
-                    row.purpose='reference';db.add(Audit(actor=user.id,action='material_purpose_reference',target=row.id))
-                classified.append({'material_id':row.id,'filename':row.filename,'matched_reference':reference_hashes[row.sha256]})
-        db.commit()
-    atomic_json(destination/'manifest.json',{'imported_at':timestamp(),'source_directory':str(source),'records':records,'reference_materials':classified,
-        'storage':'原件在后端storage目录；MySQL保存索引、用途、SHA256及提取正文。备份需同时保留数据库和原件目录。',
-        'boundary':'原始资料与参考评价/流程说明分开登记；Excel公式仅保留文本，不执行或重算。'})
-    print(json.dumps({'original_files':len(records),'reference_materials_classified':len(classified)},ensure_ascii=False))
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--source', type=Path, required=True)
+    parser.add_argument('--username', default='admin')
+    args = parser.parse_args()
+    source = args.source.resolve(strict=True)
+    if not source.is_dir():
+        raise ValueError('Source must be a directory')
+    storage = Path(settings().storage_dir).resolve()
+    receipt = storage / 'chemistry-library' / 'manifest.json'
+    if receipt.exists():
+        raise ValueError(f'An import receipt already exists; review it before importing again: {receipt}')
+    # Import extracted originals only; a sibling ZIP is not imported a second time.
+    files = sorted(p for p in source.rglob('*') if p.is_file() and p.suffix.lower() in SUPPORTED_MATERIALS)
+    if not files:
+        raise ValueError('No supported original files found')
+    records, created_paths = [], []
+    committed = False
+    try:
+        with Session() as db:
+            user = db.scalar(select(User).where(User.username == args.username, User.role == 'admin'))
+            if not user:
+                raise ValueError('Administrator account not found')
+            for path in files:
+                filename = '有机化学/' + path.relative_to(source).as_posix()
+                if len(filename) > 255:
+                    raise ValueError(f'Material path too long: {filename}')
+                if db.scalar(select(Material.id).where(Material.filename == filename)):
+                    raise ValueError(f'Material already exists: {filename}')
+                print(json.dumps({'file': path.name, 'status': 'extracting'}, ensure_ascii=False), flush=True)
+                content = path.read_bytes()
+                if len(content) > settings().max_upload_mb * 1024 * 1024:
+                    raise ValueError(f'Material exceeds configured file size limit: {path.name}')
+                extracted = _extract_text(path.name, content)
+                row = _store_material(db, user, filename, content, extracted)
+                stored = storage / row.storage_key
+                created_paths.append(stored)
+                row.purpose = 'instruction' if path.name == 'AI4S项目-里程碑-测试大纲修改要求.docx' else 'project'
+                if stored.stat().st_size != len(content):
+                    raise ValueError(f'Original copy has incorrect size: {path.name}')
+                records.append({'source': str(path), 'material_id': row.id, 'filename': filename,
+                                'bytes': len(content), 'text_characters': len(extracted), 'purpose': row.purpose})
+                print(json.dumps(records[-1], ensure_ascii=False), flush=True)
+            manifest = {'imported_at': datetime.now(timezone.utc).isoformat(), 'source_directory': str(source),
+                        'uploaded_by': args.username, 'records': records,
+                        'storage': '数据库保存材料索引、用途和提取正文；原件保存在 storage 目录。',
+                        'boundary': '仅导入材料，未创建成果申报或启动评测；Excel 公式保留为文本。'}
+            receipt.parent.mkdir(parents=True, exist_ok=True)
+            pending = receipt.with_suffix('.pending.json')
+            pending.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')
+            db.commit()
+            committed = True
+            pending.replace(receipt)
+    except Exception:
+        if not committed:
+            for path in created_paths:
+                path.unlink(missing_ok=True)
+            receipt.with_suffix('.pending.json').unlink(missing_ok=True)
+        raise
+    print(json.dumps({'imported_files': len(records), 'receipt': str(receipt)}, ensure_ascii=False))
+
+
+if __name__ == '__main__':
+    main()

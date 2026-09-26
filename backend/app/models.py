@@ -27,6 +27,7 @@ class User(Base):
 class Ticket(Base):
     __tablename__ = 'tickets'
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    project_id: Mapped[str | None] = mapped_column(ForeignKey('projects.id'), index=True)
     owner: Mapped[str] = mapped_column(String(80), index=True)
     query: Mapped[str] = mapped_column(String(200))
     normalized_query: Mapped[str] = mapped_column(String(200), index=True)
@@ -34,16 +35,20 @@ class Ticket(Base):
     status: Mapped[str] = mapped_column(String(30), default='pending')
     result_id: Mapped[str | None] = mapped_column(String(36))
     note: Mapped[str] = mapped_column(Text, default='')
+    received_by: Mapped[str | None] = mapped_column(ForeignKey('users.id'))
+    received_at: Mapped[datetime | None] = mapped_column(DateTime)
+    accepted_at: Mapped[datetime | None] = mapped_column(DateTime)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
 
 
 class Material(Base):
     __tablename__ = 'materials'
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    project_id: Mapped[str | None] = mapped_column(ForeignKey('projects.id'), index=True)
+    use_in_workflow: Mapped[int] = mapped_column(Integer, default=0, server_default='0')
     filename: Mapped[str] = mapped_column(String(255))
     purpose: Mapped[str] = mapped_column(String(24),default='project')
     storage_key: Mapped[str] = mapped_column(String(80), unique=True)
-    sha256: Mapped[str] = mapped_column(String(64))
     size: Mapped[int] = mapped_column(Integer)
     text: Mapped[str] = mapped_column(Text)
     uploaded_by: Mapped[str] = mapped_column(ForeignKey('users.id'))
@@ -87,9 +92,9 @@ class Task(Base):
 class Result(Base):
     __tablename__ = 'evaluation_results'
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    project_id: Mapped[str | None] = mapped_column(ForeignKey('projects.id'), index=True)
     task_id: Mapped[str | None] = mapped_column(ForeignKey('evaluation_tasks.id'), unique=True)
     pipeline_id: Mapped[str | None] = mapped_column(ForeignKey('pipeline_jobs.id'), unique=True)
-    source_fingerprint: Mapped[str | None] = mapped_column(String(64), nullable=True)
     title: Mapped[str] = mapped_column(String(200), index=True)
     search_text: Mapped[str] = mapped_column(Text)
     payload: Mapped[dict] = mapped_column(JSON)
@@ -137,6 +142,7 @@ class QueryRecord(Base):
 class PipelineJob(Base):
     __tablename__='pipeline_jobs'
     id: Mapped[str] = mapped_column(String(36),primary_key=True,default=uid)
+    project_ref: Mapped[str | None] = mapped_column(ForeignKey('projects.id'), index=True)
     title: Mapped[str] = mapped_column(String(200))
     project_id: Mapped[str] = mapped_column(String(100))
     outcome_id: Mapped[str] = mapped_column(String(160))
@@ -148,3 +154,32 @@ class PipelineJob(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime,default=now)
     started_at: Mapped[datetime | None] = mapped_column(DateTime)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+class Project(Base):
+    __tablename__ = 'projects'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    name: Mapped[str] = mapped_column(String(200), unique=True)
+    code: Mapped[str] = mapped_column(String(100), unique=True)
+    access_prefix: Mapped[str] = mapped_column(String(12), unique=True)
+    access_secret: Mapped[str] = mapped_column(String(300))
+    access_version: Mapped[int] = mapped_column(Integer, default=1)
+    evaluation_config: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
+
+
+class ProjectMember(Base):
+    __tablename__ = 'project_members'
+    __table_args__ = (UniqueConstraint('project_id', 'user_id', name='uq_project_member'),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    project_id: Mapped[str] = mapped_column(ForeignKey('projects.id'), index=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'), index=True)
+    access_version: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
+
+
+class AccessAttempt(Base):
+    __tablename__ = 'project_access_attempts'
+    id: Mapped[str] = mapped_column(ForeignKey('users.id'), primary_key=True)
+    failures: Mapped[int] = mapped_column(Integer, default=0)
+    locked_until: Mapped[datetime | None] = mapped_column(DateTime)

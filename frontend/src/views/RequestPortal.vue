@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import {ref,computed,onMounted,onUnmounted} from 'vue'
+import {api,post,formatDate} from '../api'
+import type {Project,RequestRow} from '../project'
+import {states} from '../project'
+import ProjectGate from '../components/ProjectGate.vue'
+import WorkflowProgress from '../components/WorkflowProgress.vue'
+const projects=ref<Project[]>([]),requests=ref<RequestRow[]>([]),projectId=ref(''),name=ref(''),description=ref(''),busy=ref(false),ready=ref(false),error=ref(''),key=ref(crypto.randomUUID())
+const visible=computed(()=>requests.value.filter(r=>r.project_id===projectId.value))
+let timer:ReturnType<typeof setInterval>|undefined
+async function load(){try{const [p,r]=await Promise.all([api<Project[]>('/projects'),api<RequestRow[]>('/requests')]);projects.value=p;requests.value=r;if(!p.some(x=>x.id===projectId.value))projectId.value=p[0]?.id||'';ready.value=true;error.value=''}catch(e){error.value=(e as Error).message}}
+async function joined(p:Project){await load();projectId.value=p.id}
+async function submit(){busy.value=true;error.value='';try{await post('/requests',{project_id:projectId.value,request_key:key.value,outcome_name:name.value,description:description.value});name.value='';description.value='';key.value=crypto.randomUUID();await load()}catch(e){error.value=(e as Error).message}finally{busy.value=false}}
+onMounted(async()=>{await load();timer=setInterval(load,5000)});onUnmounted(()=>clearInterval(timer))
+</script>
+<template><div class="content-page project-page"><el-alert v-if="error" :title="error" type="error" :closable="false"/><el-skeleton v-if="!ready&&!error" :rows="5"/><ProjectGate v-if="ready&&!projects.length" empty @unlocked="joined"/><template v-if="projects.length"><div class="project-toolbar"><el-select v-model="projectId" aria-label="选择项目" class="project-select"><el-option v-for="p in projects" :key="p.id" :label="p.name" :value="p.id"/></el-select><ProjectGate @unlocked="joined"/></div><form class="panel request-form" @submit.prevent="submit"><h2>提交评测需求</h2><div class="request-input"><el-input v-model="name" aria-label="成果名称" placeholder="填写需要评测的成果名称" maxlength="200"/><el-button type="primary" native-type="submit" :disabled="!name.trim()" :loading="busy">提交需求</el-button></div><el-collapse><el-collapse-item title="补充说明（选填）" name="notes"><el-input v-model="description" type="textarea" :rows="3" maxlength="5000" aria-label="补充说明"/></el-collapse-item></el-collapse></form><div class="section-heading"><h2>我的工单 <span class="count-pill">{{visible.length}}</span></h2><el-button text @click="load">刷新</el-button></div><div v-if="!visible.length" class="panel empty-project">暂无工单</div><article v-for="r in visible" :key="r.id" class="panel request-card"><div class="request-card-heading"><div><h3>{{r.outcome_name}}</h3><time>{{formatDate(r.created_at)}}</time></div><span class="status-pill" :class="r.status">{{states[r.status]||r.status}}</span></div><WorkflowProgress :steps="r.steps"/><div class="request-card-footer"><p v-if="['waiting','failed'].includes(r.status)">{{r.note}}</p><RouterLink v-if="r.result_id" :to="`/results/${r.result_id}`" class="primary-link">{{r.status==='awaiting_acceptance'?'查看报告并验收':'查看报告'}} ↗</RouterLink></div></article></template></div></template>

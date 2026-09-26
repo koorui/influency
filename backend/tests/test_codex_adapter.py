@@ -16,7 +16,7 @@ def fixture_assessment():
     for f in fields:
         if f['name']=='outcome_name':f.update(value='示例探针',status='confirmed',evidence_ids=['P1','P2'])
     upgrade=lambda n:{'target_level':n,'level_name':contract.LEVELS[n-1],'need':'提供真实使用证据','proof_materials':['使用记录']}
-    return {'schema_version':'wu-outcome-v2.1','rubric_id':'wu-v2-six-levels','input_mode':'name_plus_materials',
+    return {'schema_version':'wu-outcome-v2.1','rubric_id':contract.RUBRIC_VERSION,'input_mode':'name_plus_materials',
         'project_context':{'status':'resolved','project_name':'测试项目','project_id':None,'source':'测试项目报告'},
         'outcome_resolution':{'user_query':'示例探针','canonical_name':'示例探针','aliases':[],'resolution_confidence':'high','candidate_outcomes':[{'name':'示例探针','scope':'测试项目所述示例探针','evidence_ids':['P1','P2']}],'scope_note':'两处项目原文对齐','source_refs':['P1','P2']},
         'outcome_card':fields,'evaluation_status':'formal','summary':'仅用于程序测试的成果。','current_level':1,'level_name':contract.LEVELS[0],
@@ -43,7 +43,7 @@ def test_contract_prevents_false_levels_and_broken_evidence():
     x=copy.deepcopy(data);x['project_context']['status']='missing';invalid.append(x)
     x=copy.deepcopy(data);x['outcome_resolution']['candidate_outcomes']*=2;invalid.append(x)
     x=copy.deepcopy(data);x['upgrade_plus_2']['target_level']=6;invalid.append(x)
-    x=copy.deepcopy(data);x['dimensions'][0]['grade']='G1';invalid.append(x)
+    x=copy.deepcopy(data);x['dimensions'][0]['grade']='G3';invalid.append(x)
     for x in invalid:
         with pytest.raises(ValidationError): contract.Assessment.model_validate(x)
     value.evidence_index[0].quote='不存在的摘录'

@@ -1,14 +1,23 @@
-"""Explicitly scoped handoff to the unmodified v19 evaluator."""
+"""Frozen-evidence handoff to the unified skill's seven-dimension evaluator."""
 import copy
 import importlib.util
 import json
 from types import SimpleNamespace
 from .pipeline_stages import SKILLS
-from .pipeline_store import WaitingForInput,atomic_json,fingerprint
+from .pipeline_store import WaitingForInput,atomic_json
+from .skill_loader import contract
+from .unified_evaluation import combine_evaluations
+
+
+def dimension_output(outputs, result):
+    return {'rubric_id':contract.RUBRIC_VERSION,'rubric_version':contract.RUBRIC_VERSION,
+            'grading_standard':contract.GRADING_VERSION,'report_role':'dimensions',
+            'project_id':outputs['wu_intake']['project_id'],
+            'outcome_id':outputs['wu_intake']['outcome_id'],'result':result}
 
 
 def wrapper():
-    spec=importlib.util.spec_from_file_location('pipeline_v19_wrapper',SKILLS/'dual-layer-impact-v19/scripts/v19.py')
+    spec=importlib.util.spec_from_file_location('pipeline_v19_wrapper',SKILLS/'unified-impact-evaluation/scripts/v19.py')
     module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
     return module
 
@@ -69,7 +78,11 @@ def build_v19_workspace(inputs,outputs):
 def v19_evaluation_stage(inputs,outputs,folder):
     import os
     from .config import settings
-    workspace=build_v19_workspace(inputs,outputs)
+    if inputs.get('automatic_workspace'):
+        from .pipeline_workspace import current_workspace
+        workspace=current_workspace(inputs,outputs,folder)
+    else:
+        workspace=build_v19_workspace(inputs,outputs)
     path=folder/'workspace.json';atomic_json(path,workspace)
     engine=wrapper();preflight=engine.inspect_workspace(path);atomic_json(folder/'preflight.json',preflight)
     if not preflight['formal_input_ready']:raise WaitingForInput('v19输入契约未满足',preflight)
@@ -77,8 +90,7 @@ def v19_evaluation_stage(inputs,outputs,folder):
     if cfg.v19_transport=='codex':
         from .v19_codex_transport import run_codex_v19
         result=run_codex_v19(workspace,folder/'artifacts',engine)
-        return {'rubric_id':'outcome-d1-d7-evaluation.v19','project_id':outputs['wu_intake']['project_id'],
-                'outcome_id':outputs['wu_intake']['outcome_id'],'workspace_hash':fingerprint(workspace),'result':result}
+        return dimension_output(outputs,result)
     if cfg.v19_transport!='provider':raise ValueError('V19_TRANSPORT仅支持codex或provider')
     allowed={'PATH','PATHEXT','SYSTEMROOT','WINDIR','USERPROFILE','APPDATA','LOCALAPPDATA','TEMP','TMP','HOME','COMSPEC','HTTP_PROXY','HTTPS_PROXY','NO_PROXY','SSL_CERT_FILE'}
     provider={k:v for k,v in os.environ.items() if k.upper() in allowed}
@@ -90,17 +102,22 @@ def v19_evaluation_stage(inputs,outputs,folder):
     code=engine.run(SimpleNamespace(workspace=path,output_dir=folder/'artifacts',request_timeout=240,parallelism=2,total_timeout=1800,provider_environment=provider))
     if code:raise ValueError(f'v19阶段执行或校验失败（{code}），底稿已保留')
     result=json.loads((folder/'artifacts/evaluation-run.json').read_text(encoding='utf-8'))
-    return {'rubric_id':'outcome-d1-d7-evaluation.v19','project_id':outputs['wu_intake']['project_id'],
-            'outcome_id':outputs['wu_intake']['outcome_id'],'workspace_hash':fingerprint(workspace),'result':result}
+    return dimension_output(outputs,result)
 
 
 def export_stage(inputs,outputs,folder):
     wu=outputs['wu_evaluation'];v19=outputs['v19_evaluation']
     atomic_json(folder/'wu-evaluation.json',wu)
     atomic_json(folder/'v19-evaluation.json',v19)
+    combined=combine_evaluations(wu,v19)
+    atomic_json(folder/'unified-evaluation.json',combined)
     manifest={'schema_version':'impact-pipeline-result.v1','project_id':wu['project_id'],'outcome_id':wu['outcome_id'],
-              'wu':{'file':'wu-evaluation.json','rubric_id':wu['rubric_id'],'sha256':fingerprint(wu)},
-              'v19':{'file':'v19-evaluation.json','rubric_id':v19['rubric_id'],'sha256':fingerprint(v19)},
-              'search_mode':outputs.get('search_replay',{}).get('replay',{}).get('mode','historical_replay'),'published':False,'note':'两套L级口径独立，禁止按编号直接合并。'}
+              'wu':{'file':'wu-evaluation.json','rubric_id':wu['rubric_id']},
+              'v19':{'file':'v19-evaluation.json','rubric_id':v19['rubric_id']},
+              'unified':{'file':'unified-evaluation.json','comparison':combined['comparison']},
+              'evaluation_name':combined['evaluation_name'],'rubric_version':combined['rubric_version'],
+              'grading_standard':combined['grading_standard'],
+              'search_mode':outputs.get('search_replay',{}).get('replay',{}).get('mode','historical_replay'),
+              'published':False,'note':combined['rule']}
     atomic_json(folder/'manifest.json',manifest)
     return manifest

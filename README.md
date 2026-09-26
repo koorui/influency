@@ -1,114 +1,77 @@
-﻿# 成果影响力评价平台
+# 知衡impact
 
-一个前后端分离的科研成果影响力评价平台。用户可以按关键词查询已发布成果，也可以提交固定表单和材料；管理员负责材料入库、创建评价任务、运行 Codex Skill、审核 JSON 结果并发布报告。
+科研成果影响力评价平台。用户凭项目安全码加入项目，提交成果名称，管理员受理后系统使用该项目材料运行完整评价工作流，自动返回报告，再由提交人验收。
 
-## 功能
+## 使用方式
 
-- 用户端：成果关键词联想、精确查询、固定表单提交、附件上传、需求记录。
-- 管理端：需求受理、材料库、批量上传文件/文件夹/ZIP、评价任务、Pipeline、草稿审核、发布/撤回和审计日志。
-- 评价链路：吴老师成果定位 → Search 核验或历史回放 → AI 贡献归因 → 吴老师评价 → v19 双层评价。
-- MySQL 保存元数据和 JSON 结果；原始材料与过程底稿保存在 backend/storage 或 Docker volume。
+- 用户端只有 **需求提交**、**成果报告** 两个入口。提交页显示本人每张工单的处理进度；报告页可以查看已加入项目中其他用户成功生成的报告。只有工单提交人可以验收对应报告。
+- 管理端只有 **项目材料库**、**工单与工作流**。材料按项目组织，可上传文件、文件夹或 ZIP，并选择参与新工单的原始材料。
+- 每张工单依次呈现 **成果卡 → 外部 Search → 贡献归因 → 双层影响力评价**。提交后先进入“待受理”；管理员点击“受理并启动”后执行。全部阶段成功且报告通过结构与引用校验后自动发布，提交人点击“验收通过”结束流程。没有单项评价或独立报告审核入口。
+- 管理员可删除项目、材料、工作流。项目删除包含其材料、工单、报告与成员授权；工作流删除包含其工单、过程文件与报告。运行中的工作流禁止删除，被工作流引用的材料须先删除相关工作流。删除会二次确认，项目还要求输入完整项目名称。
+- 工作流失败或需要补证时停在当前工单，管理员在同一页面处理后继续；未完成的结果不发布给用户。
+- 管理员创建项目时设置项目编号、名称与评价日期范围，获取安全码。重置安全码会撤销原有成员权限，成员需重新输入新码。
 
-## 快速启动（Windows）
+## Docker 启动
 
-需要 Python 3.13、Node.js 22 和 Docker Desktop。
+```sh
+docker compose --env-file .env.docker up --build -d --wait --wait-timeout 240
+docker compose --env-file .env.docker ps
+```
 
-    Copy-Item .env.example .env
-    # 编辑 .env，至少修改 MYSQL_ROOT_PASSWORD、MYSQL_PASSWORD、SECRET_KEY
-    docker compose up -d --build
-    docker compose exec api python -m app.cli create-admin
-    docker compose exec api python -m app.cli seed
+Windows 可双击 `启动Docker.cmd`，访问 http://localhost:18080 。停止使用 `停止Docker.cmd`，数据库和材料卷保留。实际服务由 Nginx、FastAPI、MySQL 和一个完整工作流 worker 组成。Codex CLI 已封装在镜像中，服务器无需另装 CLI。
 
-访问 Web：http://localhost:18080；本地开发前端：http://localhost:5173；API 文档：http://127.0.0.1:8000/docs。
+部署和迁移步骤见 [Docker部署说明.md](Docker部署说明.md)。`.env.docker`、`.deploy-secrets/`、`.deploy-state/`、账号文件和材料均为私有数据，不进入 Git。当前已有数据必须随 Docker 数据卷迁移，仅复制源码不会迁移数据库。
 
-本地开发也可以使用 scripts/dev.ps1。首次创建管理员时默认用户名是 admin，密码由命令行提示设置；不要把真实密码提交到 Git。
+## 评价执行
 
-## 配置 Codex
+`pipeline-worker` 通过 Compose secrets 读取本机 `.codex-relay` 导出的配置和认证，使用独立 CLI 工作目录，不读取 `.codex-4`。模型与推理强度在 `.env.docker` 配置。管理员受理工单后才会排队调用模型；部署检查不会调用模型。
 
-在运行 worker 的机器上安装并登录 Codex CLI，然后在 .env 中设置：
+本项目 worker 按用户授权使用 CLI 完全访问模式（仅 Docker 容器内），以逐份 UTF-8 文件读取材料；执行环境故障独立报告，成果名只有真实歧义才要求确认。
 
-    EVALUATION_ADAPTER=codex
-    CODEX_BINARY=codex
-    CODEX_MODEL=gpt-6-astra
-    CODEX_REASONING_EFFORT=medium
-    CODEX_SEARCH=true
+新工作流读取项目选中的原始材料，生成成果卡、联网检索、贡献归因和双层评价所需的本次成果证据工作区，不复用历史评分作为新成果结论。规则或证据不满足要求时保留异常供管理员处理。
 
-本地演示可使用 EVALUATION_ADAPTER=mock。API 和 worker 必须使用同一份 .env。不要提交 API key、Cookie、.env、.local-access.md 或 backend/storage 中的真实材料。
+Wu 与 v19 已融合为 [统一成果影响力评价技能](skills/unified-impact-evaluation/SKILL.md)：保留成果定位、建卡、管理者报告以及七维/双层综合能力，共同读取一份六级与七维标准。两份报告的等级差异在管理员工作流和用户报告中并列展示，不平均、不自动取高；旧结果显示历史版本，不自动标记成已按新标准重评。
 
-## 数据上传
+规则版本为 `grading-20260925-1930`，统一评价标识为 `unified-double-layer-impact.v1`。原六阶段ID和已有报告结构保留兼容，统一导出新增 `unified-evaluation.json`。
 
-管理员可以在“材料库”上传单文件或批量材料。支持 TXT、Markdown、PDF、DOCX、XLSX 和 ZIP；ZIP 会安全解压后逐个解析，前端支持选择文件夹。默认限制如下，可在 .env 调整：
+## 项目材料
 
-    MAX_UPLOAD_MB=200
-    BATCH_MAX_FILES=200
-    BATCH_MAX_TOTAL_MB=2048
-    ARCHIVE_MAX_EXPANDED_MB=5120
+支持 TXT、Markdown、PDF、DOCX、XLSX 和 ZIP。项目材料 `project` 可选入工作流；参考资料 `reference`、操作说明 `instruction` 不默认作为原始证据。材料上传和选择均校验所属项目。
 
-### API 登录和单文件上传
+默认上传限制：单文件 200 MB、每批 200 个文件、每批总计 2048 MB、压缩包解压总计 5120 MB，可通过环境配置调整。
 
-先登录获得 HttpOnly 会话 Cookie：
+## 主要 API
 
-    curl -c cookies.txt -X POST http://127.0.0.1:8000/api/auth/login -H "Content-Type: application/json" -d '{"username":"admin","password":"你的密码"}'
-
-上传一个项目材料：
-
-    curl -b cookies.txt -X POST http://127.0.0.1:8000/api/admin/materials -F "file=@./材料/项目说明.pdf"
-
-### 批量上传文件、文件夹或 ZIP
-
-批量接口逐项返回 accepted 和 rejected，单个文件失败不会影响其他文件：
-
-    curl -b cookies.txt -X POST http://127.0.0.1:8000/api/admin/materials/batch -F "purpose=project" -F "files=@./材料/项目说明.pdf" -F "files=@./材料/实验数据.xlsx" -F "files=@./材料/整批材料.zip"
-
-普通用户提交材料使用 /api/submission-materials/batch。上传成功后，使用返回的材料 id 创建评价任务或 Pipeline。项目原始材料标记为 project；参考结果和流程说明分别使用 reference、instruction。
-
-## 常用 API
-
-写操作需要同源请求，并使用登录后的会话 Cookie。
+写操作使用同源请求及登录后的 HttpOnly 会话 Cookie。用户只能访问安全码授权的项目；管理员负责项目管理。
 
 | 用途 | 方法 | 路径 |
 | --- | --- | --- |
-| 健康检查 | GET | /api/health |
-| 登录/退出 | POST | /api/auth/login、/api/auth/logout |
-| 查询已发布成果 | GET | /api/results |
-| 关键词查询 | POST | /api/search |
-| 用户提交固定表单 | POST | /api/submissions |
-| 管理员概览 | GET | /api/admin/overview |
-| 材料列表 | GET | /api/admin/materials |
-| 创建评价任务 | POST | /api/admin/tasks |
-| 任务列表/重试 | GET/POST | /api/admin/tasks、/api/admin/tasks/{id}/retry |
-| 评价结果审核发布 | PUT/POST | /api/admin/results/{id}、/publish、/withdraw |
-| Pipeline 列表/创建 | GET/POST | /api/admin/pipelines |
-| Pipeline 详情/续跑 | GET/POST | /api/admin/pipelines/{id}、/{id}/resume |
-| 评价 JSON Schema | GET | /api/evaluation-schema |
+| 登录 / 注册 / 退出 | POST | /api/auth/login、/register、/logout |
+| 已加入项目 | GET | /api/projects |
+| 输入项目安全码 | POST | /api/projects/unlock |
+| 提交需求 / 本人工单 | POST / GET | /api/requests |
+| 项目报告 / 报告详情 | GET | /api/reports、/api/reports/{id} |
+| 项目管理 | GET / POST | /api/admin/projects |
+| 更新项目 | PUT | /api/admin/projects/{id} |
+| 重置项目安全码 | POST | /api/admin/projects/{id}/access-code |
+| 项目材料列表 / 上传 | GET / POST | /api/admin/projects/{id}/materials |
+| 选择材料参与评价 | PATCH | /api/admin/projects/{id}/materials/{material_id} |
+| 工单列表 / 详情 | GET | /api/admin/requests、/api/admin/requests/{id} |
+| 受理并启动 | POST | /api/admin/requests/{id}/receive |
+| 用户验收报告 | POST | /api/requests/{id}/accept-report |
+| 处理异常并继续 | POST | /api/admin/requests/{id}/continue |
+| 删除项目 / 材料 / 工作流 | DELETE | /api/admin/projects/{id}、/api/admin/projects/{id}/materials/{material_id}、/api/admin/requests/{id} |
 
-### 查询示例
+旧的单项评价、自由创建 Pipeline、手动审核发布和全局用户报告查询接口已退出注册，不能绕过项目授权。
 
-    curl -X POST http://127.0.0.1:8000/api/search -H "Content-Type: application/json" -d '{"query":"拉曼光谱","limit":20}'
+## 历史数据
 
-### 创建评价任务
+2026-09-25 已按新一轮试跑要求清空全部历史工单、工作流、报告、版本、查询、操作记录及材料卷中的历史过程目录，撤销旧项目成员授权。当前保留一个化学项目、6 份原始材料与流程说明、原有账号，并新增独立试跑用户。数据库迁移到 `0013_request_acceptance`。
 
-material_ids 填写上传接口返回的材料 ID，adapter 可选 mock 或 codex：
+本轮清理前完整备份：`.local-runtime/backups/before-fresh-trial-20260925-075951/`，包含数据库 SQL 与整个材料卷归档。重置回执在材料卷 `/data/materials/fresh-trial-reset.json`。旧包重导入保护和初始化标记保留，原交付 ZIP、外部原始材料与早期备份均未修改。
 
-    curl -b cookies.txt -X POST http://127.0.0.1:8000/api/admin/tasks -H "Content-Type: application/json" -d '{"title":"拉曼光谱项目评价","keywords":["拉曼光谱","光谱检测"],"material_ids":["材料ID"],"adapter":"codex"}'
+新账号与密码保存在已忽略的 `.local-access.md`。首次登录需输入化学项目安全码，新账号没有预先加入项目或提交工单。建议普通窗口登录管理员，无痕窗口登录新用户，避免同一浏览器会话覆盖登录身份。
 
-完整字段、响应结构和认证要求以 /docs 中的 OpenAPI 为准。评价结果统一为 JSON，用户端和管理端通过同一份 JSON 渲染报告页面。
+## 验证范围
 
-## 目录结构
-
-    backend/    FastAPI、SQLAlchemy、Alembic、worker 和测试
-    frontend/   Vue 3、TypeScript、Vite、Element Plus
-    skills/     评价 Pipeline 所需的 Codex Skill
-    scripts/    环境初始化、开发启动和数据库验证脚本
-    docs/       Skill 接入、Pipeline 和验收说明
-    compose.yaml
-
-## 测试
-
-    cd backend
-    ..\.venv\Scripts\python.exe -m pytest -q
-    ..\.venv\Scripts\python.exe -m alembic check
-    cd ..\frontend
-    npm.cmd run build
-
-真实 Codex 评价需要在已登录 Codex CLI 的环境中运行 worker；测试和演示默认不会自动发布结果，管理员必须审核草稿后再发布。
+项目权限、安全码重置、提交幂等、完整工单自动交付、异常不发布、项目材料隔离和新成果证据工作区通过隔离检查；模型调用在检查中使用替身。前端 TypeScript 与生产构建通过。此次没有发出真实模型请求，运行数据库内没有预置工单或报告。管理员受理后将通过 relay 的 CLI 发起真实评价。旧接口的历史检查不适用于新的产品流程。

@@ -15,7 +15,7 @@ def crossref_url(query):
     doi=re.search(r'\b10\.\d{4,9}/[^\s"<>]+',query)
     if doi:
         return 'https://api.crossref.org/works/'+urllib.parse.quote(doi.group().rstrip('.,;'),safe='')
-    return 'https://api.crossref.org/works?'+urllib.parse.urlencode({'query':query,'rows':5})
+    return 'https://api.crossref.org/works?'+urllib.parse.urlencode({'query.bibliographic':query,'rows':10})
 
 
 def github_url(query):
@@ -33,7 +33,7 @@ CHANNELS={
     'bing':lambda q:'https://www.bing.com/search?'+urllib.parse.urlencode({'q':q}),
 }
 
-def collect(plan,output):
+def collect(plan,output,*,id_offset=0):
     output.mkdir(parents=True,exist_ok=False)
     entries=plan['queries']
     if len(entries)>30:raise ValueError('最多30个有针对性的查询')
@@ -58,7 +58,7 @@ def collect(plan,output):
             if isinstance(exc,urllib.error.HTTPError):record['http_status']=exc.code
         (output/(record['id']+'-receipt.json')).write_text(json.dumps(record,ensure_ascii=False,indent=2),encoding='utf-8')
         return record
-    with ThreadPoolExecutor(max_workers=3) as pool:records=list(pool.map(query,enumerate(entries,1)))
+    with ThreadPoolExecutor(max_workers=3) as pool:records=list(pool.map(query,enumerate(entries,1+id_offset)))
     result={'schema_version':'public-search-receipts.v1','new_requests_executed':len(records),
             'successful_responses':sum(r['status']=='response_received' for r in records),'queries':records,
             'boundary':'HTTP响应仅证明本次检索请求及所保存返回，不等于全文读取、独立证据或研究结论已核实。'}

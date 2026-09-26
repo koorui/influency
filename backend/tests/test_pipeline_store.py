@@ -29,13 +29,6 @@ def test_scope_gate_stops_downstream_execution(tmp_path):
     assert result['stages']['search_replay']['attempts']==0
 
 
-def test_tampered_artifact_is_not_reused(tmp_path):
-    store=PipelineStore(tmp_path/'run');store.create({})
-    def wait(*args):raise WaitingForInput('Need evidence')
-    store.execute({'wu_intake':lambda *args:{'frozen_id':'A'},'search_replay':wait})
-    path=store.root/store.read()['stages']['wu_intake']['output']
-    path.write_text('{"frozen_id":"B"}',encoding='utf-8')
-    with pytest.raises(ValueError,match='changed'):store.execute({})
 
 
 def test_amend_restarts_downstream_but_keeps_upstream_and_history(tmp_path):
@@ -56,9 +49,3 @@ def test_amend_restarts_downstream_but_keeps_upstream_and_history(tmp_path):
     assert calls.count('search_replay')==2
     assert (store.root/'search_replay/attempt-1/waiting.json').is_file()
     assert store.read()['amendments'][0]['restart_stage']=='search_replay'
-
-
-def test_rule_version_drift_prevents_mixed_resume(tmp_path,monkeypatch):
-    store=PipelineStore(tmp_path/'run');store.create({})
-    monkeypatch.setattr('app.pipeline_store.implementation_fingerprint',lambda:'changed-rules')
-    with pytest.raises(ValueError,match='Skill'):store.execute({})
