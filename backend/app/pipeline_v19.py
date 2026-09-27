@@ -75,15 +75,17 @@ def v19_evaluation_stage(inputs,outputs,folder):
         workspace=current_workspace(inputs,outputs,folder)
     else:
         workspace=build_v19_workspace(inputs,outputs)
+    from .evaluation_facts import attach_fact_ledger
+    attach_fact_ledger(workspace,outputs.get('wu_evaluation',{}).get('fact_ledger'),outputs.get('wu_evaluation',{}).get('assessment',{}).get('evidence_index',[]))
     path=folder/'workspace.json';atomic_json(path,workspace)
     engine=wrapper();preflight=engine.inspect_workspace(path);atomic_json(folder/'preflight.json',preflight)
     if not preflight['formal_input_ready']:raise WaitingForInput('v19输入契约未满足',preflight)
     cfg=settings()
     if cfg.v19_transport=='codex':
         from .v19_codex_transport import run_codex_v19
-        result=run_codex_v19(workspace,folder/'artifacts',engine)
-        return {'rubric_id':'outcome-d1-d7-evaluation.v19','project_id':outputs['wu_intake']['project_id'],
-                'outcome_id':outputs['wu_intake']['outcome_id'],'result':result}
+        cache_roots=[p/'artifacts/calls' for p in folder.parent.glob('attempt-*') if p!=folder and (p/'artifacts/calls').is_dir()]
+        result=run_codex_v19(workspace,folder/'artifacts',engine,cache_roots=cache_roots)
+        return evaluation_handoff(outputs['wu_intake'],result)
     if cfg.v19_transport!='provider':raise ValueError('V19_TRANSPORT仅支持codex或provider')
     allowed={'PATH','PATHEXT','SYSTEMROOT','WINDIR','USERPROFILE','APPDATA','LOCALAPPDATA','TEMP','TMP','HOME','COMSPEC','HTTP_PROXY','HTTPS_PROXY','NO_PROXY','SSL_CERT_FILE'}
     provider={k:v for k,v in os.environ.items() if k.upper() in allowed}
@@ -95,8 +97,15 @@ def v19_evaluation_stage(inputs,outputs,folder):
     code=engine.run(SimpleNamespace(workspace=path,output_dir=folder/'artifacts',request_timeout=240,parallelism=2,total_timeout=1800,provider_environment=provider))
     if code:raise ValueError(f'v19阶段执行或校验失败（{code}），底稿已保留')
     result=json.loads((folder/'artifacts/evaluation-run.json').read_text(encoding='utf-8'))
-    return {'rubric_id':'outcome-d1-d7-evaluation.v19','project_id':outputs['wu_intake']['project_id'],
-            'outcome_id':outputs['wu_intake']['outcome_id'],'result':result}
+    return evaluation_handoff(outputs['wu_intake'],result)
+
+
+def evaluation_handoff(scope,result):
+    # Read the executed run's version, never stamp an older result with current rules.
+    run=result.get('run') or {}
+    return {'rubric_id':'outcome-d1-d7-evaluation.v19','project_id':scope['project_id'],
+            'outcome_id':scope['outcome_id'],'rubric_version':run.get('rubric_version'),
+            'grading_standard':run.get('grading_standard'),'result':result}
 
 
 def export_stage(inputs,outputs,folder):
@@ -104,10 +113,25 @@ def export_stage(inputs,outputs,folder):
     atomic_json(folder/'wu-evaluation.json',wu)
     atomic_json(folder/'v19-evaluation.json',v19)
     combined=combine_evaluations(wu,v19)
+    if not combined['complete']:raise ValueError('两份评价的等级或成果映射不完整，不能导出完成报告')
+    from .evaluation_runtime import CURRENT
+    coordination={'status':'not_run','authority':'management'}
+    if wu.get('grading_standard')==CURRENT:
+        from .evaluation_coordination import coordinate_report
+        wu,coordination=coordinate_report(inputs,outputs,folder/'coordination',combined)
+        atomic_json(folder/'management-final.json',wu)
+        combined=combine_evaluations(wu,v19)
+        if not combined['complete']:raise ValueError('协调后的报告审阅不完整')
+    combined['coordination']=coordination
     atomic_json(folder/'unified-evaluation.json',combined)
     manifest={'schema_version':'impact-pipeline-result.v1','project_id':wu['project_id'],'outcome_id':wu['outcome_id'],
               'wu':{'file':'wu-evaluation.json','rubric_id':wu['rubric_id']},
               'v19':{'file':'v19-evaluation.json','rubric_id':v19['rubric_id']},
-              'search_mode':outputs.get('search_replay',{}).get('replay',{}).get('mode','historical_replay'),'published':False,'note':'两套L级口径独立，禁止按编号直接合并。'}
+              'search_mode':outputs.get('search_replay',{}).get('replay',{}).get('mode','historical_replay'),'published':False,
+              'grading_standard':combined['grading_standard'],
+              'comparison':combined['comparison'],'review_status':combined['review_status'],
+              'coordination':coordination,
+              'management_final':wu if coordination['status']=='completed' else None,
+              'note':'管理者报告为主结论；七维用于内部审查，未消除的异议保留备查。系统协调不代表专家认定。'}
     atomic_json(folder/'manifest.json',manifest)
     return manifest

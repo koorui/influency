@@ -61,6 +61,7 @@ def inspect_workspace(path):
 def validate_result(result):
     errors=[]
     run=result.get('run') or {}
+    modern=run.get('output_contract_version')=='structured-dimension-facts-with-grades.v4'
     if result.get('schema_version')!='indicator-evaluation.run.v5':errors.append('Unexpected run schema')
     if run.get('standard_version')!=STANDARD:errors.append('Not the current v19 standard')
     outcomes=result.get('outcomes') or []
@@ -69,7 +70,14 @@ def validate_result(result):
     if not result.get('formal'):errors.append('Engine did not mark this run formal')
     if run.get('expected_call_count')!=expected or run.get('completed_call_count')!=expected:errors.append('Logical calls incomplete or inconsistent')
     def level(obj,key,prefix,max_level,label):
-        val=(obj.get(key) or {}).get('level')
+        record=obj.get(key) or {}
+        val=record.get('level')
+        if modern:
+            state=record.get('assessment_state')
+            if prefix=='G' and state in ('insufficient_evidence','not_applicable','conflict') and val is None and record.get('reason'):return
+            if prefix=='L' and val is None and record.get('reason'):return
+            if prefix=='G' and state!='assessed':errors.append(f'{label}: invalid assessment state')
+            if val is not None and not record.get('source_ids'):errors.append(f'{label}: no grade evidence')
         if val not in [f'{prefix}{i}' for i in range(1,max_level+1)]:errors.append(f'{label}: missing/invalid {key}.level')
     def pending_verdicts(node):
         if isinstance(node,dict):
@@ -86,8 +94,9 @@ def validate_result(result):
         for d in dims:level(d,'grade','G',5,f'{label}/{d.get("dimension_id")}')
         level(outcome.get('synthesis') or {},'impact_level','L',6,label)
     level(result.get('project_synthesis') or {},'scope_impact_level','L',6,'project scope')
-    for outcome in outcomes:pending_verdicts(outcome)
-    pending_verdicts(result.get('project_synthesis') or {})
+    if not modern:
+        for outcome in outcomes:pending_verdicts(outcome)
+        pending_verdicts(result.get('project_synthesis') or {})
     return {'valid':not errors,'errors':errors,'standard_version':STANDARD,'note':'Structure only; scientific conclusions still require review.'}
 
 

@@ -37,7 +37,7 @@ def completed_outputs():
             'run':{'standard_version':'outcome-d1-d7-evaluation.v19','expected_call_count':9,'completed_call_count':9},
             'outcomes':[{'outcome_id':'ONE','title':'示例探针','dimensions':[{'dimension_id':f'D{i}','grade':{'level':'G1'}} for i in range(1,8)],
                          'synthesis':{'impact_level':{'level':'L1'}}}],
-            'project_synthesis':{'scope_impact_level':{'level':'L1'}}}},'export':{'completed':True}}
+            'project_synthesis':{'scope_impact_level':{'level':'L1'}}}},'export':{'completed':True,'management_final':{'assessment':assessment}}}
 
 
 def test_project_code_is_required_and_rotation_revokes_access(admin_client):

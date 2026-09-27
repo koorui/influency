@@ -18,8 +18,8 @@ run 在独立子进程执行，输出目录必须是新的目录，保留原始�
 
 ## 输出和校验
 
-管理者结果与七维结果都记录 unified-double-layer-impact.v1 和 grading-20260925-1930。结构标识 wu-outcome-v2.1、indicator-evaluation.run.v5 及引擎版本保留兼容含义，不另行定义等级标准。
+管理者结果与七维结果都记录 unified-double-layer-impact.v1 和 grading-20260925-expert-v2。结构标识 wu-outcome-v2.1、indicator-evaluation.run.v5 及引擎版本保留兼容含义，不另行定义等级标准。七维、成果综合和范围综合的实际模型提示均加载 [专家执行规则](expert-method.md)，不是只在技能入口说明。
 
-输出包括 evaluation-run.json、product.json、preflight.json、validation.json 与运行日志。完成结果必须有七个G级、成果L级及范围L级。引用必须来自实际输入，G2及以上和L级需要相应事实支持。校验失败保留底稿，不生成假模型结果。
+当前协议采用 `outcome-evaluation.v3`：系统初判与专家认定分离；完成七维审阅不要求每维都有G，缺证／不适用／冲突保留空值；L可待定。以 [事实驱动评价协议](teacher-v3-integration.md) 为准。
 
 统一导出保留 wu-evaluation.json、v19-evaluation.json，并新增 unified-evaluation.json 和规则版本。相同对象的L级与各G级逐项对照；缺失、版本不明或混合历史结果明确标记，不自动盖上新标准标识。结构校验不替代事实核验或用户验收。

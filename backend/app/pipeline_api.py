@@ -148,6 +148,7 @@ def detail(id:UUID,db:Session=Depends(get_db)):
     row=job_or_404(db,id)
     store=PipelineStore(directory(id));state=store.read()
     waiting={}
+    if state.get('runtime_waiting'):waiting['runtime']=state['runtime_waiting']
     for stage,record in state['stages'].items():
         if record['status']=='waiting':
             path=store.root/stage/f"attempt-{record['attempts']}"/'waiting.json'
@@ -185,7 +186,10 @@ def detail(id:UUID,db:Session=Depends(get_db)):
         for child in children if isinstance(children,list) else []:
             if isinstance(child,dict) and child.get('outcome_id'):
                 scope_options.append({'id':child['outcome_id'],'title':child.get('title',''),'parent_id':parent.get('outcome_id',''),'parent_title':parent.get('title','')})
-    return {**summary(row),'stages':state['stages'],'waiting':waiting,'files':files,'amendments':state.get('amendments',[]),
+    heartbeat=None
+    try:heartbeat=json.loads((store.root/'heartbeat.json').read_text(encoding='utf-8'))
+    except (OSError,ValueError):pass
+    return {**summary(row),'heartbeat':heartbeat,'recoveries':state.get('recoveries',[]),'stages':state['stages'],'waiting':waiting,'files':files,'amendments':state.get('amendments',[]),
             'scope_options':scope_options,'scope_evidence':scope_evidence,'canonical_name':intake.get('canonical_name'),
             'scope_mapping':state['inputs'].get('v19_scope_mapping'),'search_mode':state['inputs'].get('search_mode','replay'),
             'search_boundary':state['inputs'].get('search_boundary'),

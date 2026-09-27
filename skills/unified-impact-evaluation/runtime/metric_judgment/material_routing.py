@@ -7,6 +7,11 @@ from pathlib import Path
 from .active_indicators import replacement_for, RETIRED
 
 REVIEW = json.loads(Path(__file__).with_name('material_routing_review.json').read_text(encoding='utf-8'))
+CURRENT_BRANCH_LIMITS = {
+    'D6.1':'核查具体成果在内部流程的实际接入，计划和接口可用不能代替任务输入输出。',
+    'D6.2':'核查多环节或外部流程的真实协同；不得一概排除内部协作，不将流程作用转记给产物。',
+    'D6.3':'核查持续运行周期、重复任务和维护记录；这是更高成熟度条件，不作为G2/G3的共同门槛。',
+}
 
 
 def reviewed_route(metric: dict) -> dict:
@@ -31,7 +36,7 @@ def reviewed_route(metric: dict) -> dict:
         'branch_id': branch, 'dimension_id': branch.split('.')[0] if branch else '',
         'routing_kind': 'reviewed_material_rule' if row else 'unassigned_requires_review',
         'routing_basis': retired_reason or (f"当前指标：{current['name']}。" if current else '') + (row.get('reason') or '没有经核对的对应关系，保留待分配材料；不按关键词或指标轴自动分配。'),
-        'boundary': retired_reason or REVIEW['branch_limits'].get(branch) or '需先核对材料对象和评价问题。',
+        'boundary': retired_reason or CURRENT_BRANCH_LIMITS.get(branch) or REVIEW['branch_limits'].get(branch) or '需先核对材料对象和评价问题。',
         'matched_terms': [], 'review': row,
     }
 

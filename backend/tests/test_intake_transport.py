@@ -29,6 +29,7 @@ def test_intake_receives_full_unicode_files_and_existing_outcome_name(tmp_path,m
         return model(status='ready',project_name='测试项目',canonical_name='示例探针',confidence='high',
             candidates=[{'name':'示例探针','scope':'该项目的光谱探针','evidence_ids':['P1','P2']}],
             outcome_card=fixture['outcome_card'],
+            evaluation_objects=[{'id':'primary','name':'示例探针','kind':'探针','version':'本期','relation_to_primary':'primary','evidence_ids':['P1']}],primary_object_id='primary',
             evidence=[{k:e[k] for k in ('id','material_id','locator','quote')} for e in fixture['evidence_index']],
             factors=[],comparisons=[],claims=[],gaps=[])
     monkeypatch.setattr('app.pipeline_stages.execute_json_stage',execute)

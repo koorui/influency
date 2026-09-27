@@ -6,15 +6,27 @@ from .db import Session
 from .models import PipelineJob,Ticket,now
 from .pipeline_api import directory
 from .pipeline_service import run_pipeline
-from .pipeline_store import PipelineStore
+from .pipeline_store import PipelineStore, WaitingForInput, atomic_json
 
 log=logging.getLogger(__name__)
 
 
 def run_once():
+    from .pipeline_liveness import recover_interrupted
+    recover_interrupted()
     with Session() as db:
         id=db.scalar(select(PipelineJob.id).where(PipelineJob.status=='queued').order_by(PipelineJob.created_at).limit(1))
         if not id:return False
+    from .pipeline_liveness import worker_guard
+    try:
+        with worker_guard(directory(id)):
+            return run_claimed(id)
+    except FileExistsError:
+        return False
+
+
+def run_claimed(id):
+    with Session() as db:
         claimed=db.execute(update(PipelineJob).where(PipelineJob.id==id,PipelineJob.status=='queued').values(status='running',started_at=now(),finished_at=None,error=''))
         db.commit()
         if not claimed.rowcount:return True
@@ -22,6 +34,11 @@ def run_once():
         state=run_pipeline(directory(id))
         status=state['status']
         error=next((v.get('error','') for v in state['stages'].values() if v['status'] in ('failed','waiting')),'')
+    except WaitingForInput as exc:
+        status,error='waiting',str(exc)[:2000]
+        store=PipelineStore(directory(id));state=store.read()
+        state['status']='waiting';state['runtime_waiting']={'message':str(exc),'details':exc.details}
+        atomic_json(store.path,state)
     except Exception as exc:
         log.exception('Pipeline failed: %s',id)
         status,error='failed',str(exc)[:2000]

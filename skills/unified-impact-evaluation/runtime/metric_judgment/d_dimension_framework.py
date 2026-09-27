@@ -61,7 +61,7 @@ D_DIMENSIONS: list[dict[str, Any]] = [
         "name": "项目或组织主线集成影响力",
         "short_name": "项目主线集成",
         "question": "该成果是否正式进入项目或组织主线，发生实际调用并形成持续运行或服务？",
-        "required_views": ["平台正式接入", "项目主线实际调用", "持续运行与维护"],
+        "required_views": ["内部流程接入", "多环节或外部流程协同", "持续运行与维护"],
         "ai_contribution_role": "not_primary",
     },
     {
@@ -156,13 +156,13 @@ D_BRANCH_INDICATORS: list[dict[str, Any]] = [
         "evidence_requirements": ["使用前后对照", "过程或结果日志", "效果归因与副作用", "持续使用周期"],
     },
     {
-        "branch_id": "D6.1", "dimension_id": "D6", "name": "项目主线正式接入",
-        "question": "成果是否已被项目或组织主线正式部署、纳管或接入？",
-        "evidence_requirements": ["项目主线纳管证明", "部署或接口记录", "主线流程位置"],
+        "branch_id": "D6.1", "dimension_id": "D6", "name": "内部流程接入",
+        "question": "成果是否已实际接入项目内部流程；在何处由谁使用并产生何种输出？",
+        "evidence_requirements": ["实际流程输入输出", "部署、接口或任务记录", "成果版本与流程位置"],
     },
     {
         "branch_id": "D6.2", "dimension_id": "D6", "name": "项目主线实际调用",
-        "question": "项目主线中是否发生了服务任务、接口调用或非原团队实际使用？",
+        "question": "成果是否与多环节或外部流程实际协同，有哪些任务、交付与反馈？",
         "evidence_requirements": ["平台或流程侧调用主体", "服务任务", "接口调用日志", "非原团队反馈"],
     },
     {
@@ -224,8 +224,8 @@ DIMENSION_INPUT_CONTRACTS: dict[str, dict[str, Any]] = {
         "expert_trigger": "使用效果是否达到领域实用门槛，或是否确由成果造成。",
     },
     "D6": {
-        "required_sources": ["平台正式纳管或部署", "平台或流程侧调用或服务任务", "平台或流程侧持续运行和维护记录"],
-        "synthesis_rule": "正式接入但未调用只能部分成立；接入、实际调用和持续服务均有证据才可明确成立；项目内部协同不得计入。",
+        "required_sources": ["内部流程实际接入", "多环节或外部流程的任务与输出", "持续运行和维护记录（判断更高档）"],
+        "synthesis_rule": "G2核查内部流程实际接入，G3核查多环节或外部流程协同，G4核查稳定平台或主线能力。三项分支不是所有档位必须同时通过的门槛；内部真实协同可按对象与任务进入D6，不以正式纳管作为低档前提。",
         "expert_trigger": "由项目主线负责人确认接入层级、可集成性和真实运行状态。",
     },
     "D7": {
@@ -344,8 +344,8 @@ UPSTREAM_COMPONENT_CONTRACTS: dict[str, list[dict[str, Any]]] = {
         {
             "group_id": "internal_search", "group_name": "内部 Search 组",
             "components": ["项目方声明的项目主线位置", "候选接口、部署或纳管材料", "项目内部调用与协同记录"],
-            "evaluation_use": "前两类仅作为向平台或流程侧核验的候选线索；项目内部调用另行进入协同判断。",
-            "prohibited_use": "项目内部五课题互调、普通平台接入和未来可接入均不得计入D6。",
+            "evaluation_use": "核查具体成果在内部流程的位置、真实调用及跨环节输出；项目内部记录可支持G2/G3，声明和计划需与实际行为分开。",
+            "prohibited_use": "只有设计图、拟接入或单位名单不能证明实际协同；不得一概排除项目内部真实使用与跨环节协同。",
         },
         {
             "group_id": "ai_contribution", "group_name": "AI贡献组",
@@ -355,9 +355,9 @@ UPSTREAM_COMPONENT_CONTRACTS: dict[str, list[dict[str, Any]]] = {
         },
         {
             "group_id": "external_search", "group_name": "外部 Search 组",
-            "components": ["浦江官方平台目录与新闻", "公开接口、服务或部署说明", "可公开核验的主线运行信息"],
+            "components": ["项目或组织平台官方平台目录与新闻", "公开接口、服务或部署说明", "可公开核验的主线运行信息"],
             "evaluation_use": "用于核验公开身份和主线位置；正式纳管、实际调用和持续运行仍须平台或流程侧记录或负责人确认。",
-            "prohibited_use": "搜到浦江新闻稿不能直接判D6成立；公开未检出也不能判定未接入。",
+            "prohibited_use": "搜到项目或组织平台新闻稿不能直接判D6成立；公开未检出也不能判定未接入。",
         },
     ],
     "D7": [
@@ -445,7 +445,7 @@ _UPSTREAM_PACKAGE_SPECS: dict[tuple[str, str], dict[str, Any]] = {
         "required_fields": ["外部使用者身份、独立性和联系方式/公开来源", "其自身真实任务、输入、过程、输出和验证", "使用效果、持续周期、反馈、停止或失败记录"],
     },
     ("D6", "internal_search"): {
-        "package_id": "IS-D6", "package_name": "项目主线接入候选包", "target_branches": ["D6.1", "协同单独判断"],
+        "package_id": "IS-D6", "package_name": "项目主线接入候选包", "target_branches": ["D6.1", "D6.2"],
         "required_fields": ["声明接入的项目主线名称和流程位置", "部署环境、接口、纳管或服务材料", "项目内部调用记录及其与项目主线证据的区分"],
     },
     ("D6", "ai_contribution"): {
@@ -453,8 +453,8 @@ _UPSTREAM_PACKAGE_SPECS: dict[tuple[str, str], dict[str, Any]] = {
         "required_fields": ["拟接入AI能力、接口、输入输出和版本", "运行依赖、安全边界和维护要求", "已接入事实与未来可集成性的明确区分"],
     },
     ("D6", "external_search"): {
-        "package_id": "ES-D6", "package_name": "浦江公开集成核验包", "target_branches": ["D6.1", "D6.2", "D6.3"],
-        "required_fields": ["浦江官方目录、接口、服务或部署原文", "平台或流程侧调用主体、任务、日志和时间", "持续运行周期、维护责任、版本及负责人复核状态"],
+        "package_id": "ES-D6", "package_name": "项目或组织平台公开集成核验包", "target_branches": ["D6.1", "D6.2", "D6.3"],
+        "required_fields": ["项目或组织平台官方目录、接口、服务或部署原文", "平台或流程侧调用主体、任务、日志和时间", "持续运行周期、维护责任、版本及负责人复核状态"],
     },
     ("D7", "internal_search"): {
         "package_id": "IS-D7", "package_name": "外部认可候选清单", "target_branches": ["D7.1", "D7.2", "D7.3"],
@@ -631,25 +631,25 @@ _AGENT_USE_SPECS: dict[tuple[str, str], dict[str, Any]] = {
     ("D6", "internal_search"): {
         "input_path": "adapted_evidence.internal_search + project_facts",
         "agent_use_steps": [
-            _agent_step("提取浦江接入候选", "读取项目方声明的项目主线名称、流程位置、接口、部署或纳管材料，只生成向平台或流程侧核验的 D6.1 候选，不直接判正式接入。", "branch_judgments[D6.1]", "evidence_chain", "missing_inputs"),
-            _agent_step("剔除项目内部协同", "把五课题互调、项目内部服务和普通平台接入从 D6 证据中剔除，另留给系统协同判断，不得写入 D6.1–D6.3 的支持依据。", "counterevidence", "expert_analysis"),
-            _agent_step("保持调用与运行待核", "内部日志若没有平台或流程侧主体和主线身份，只能作为线索；D6.2 实际调用和 D6.3 持续运行须等待平台或流程侧记录。", "branch_judgments[D6.2]", "branch_judgments[D6.3]", "missing_inputs"),
+            _agent_step("提取项目或组织平台接入候选", "读取内部流程位置、接口及任务记录；按证据分别确认已实际接入与仅计划接入，不把形式手续作为G2/G3唯一依据。", "branch_judgments[D6.1]", "evidence_chain", "missing_inputs"),
+            _agent_step("核查项目内部协同", "核查被评价成果实际交付了什么、谁在何任务使用以及后续结果；内部多环节协同可支持G3，不能因未正式纳管而剔除。", "counterevidence", "expert_analysis"),
+            _agent_step("保持调用与运行待核", "内部日志可建立具体成果的实际调用和跨环节协同；持续运行另需日期、重复任务和维护记录。", "branch_judgments[D6.2]", "branch_judgments[D6.3]", "missing_inputs"),
         ],
     },
     ("D6", "ai_contribution"): {
         "input_path": "adapted_evidence.ai_contribution（本维度仅作技术对象说明）",
         "agent_use_steps": [
             _agent_step("说明拟接入对象", "读取人工智能能力、接口、输入输出、版本、运行依赖与安全边界，说明项目主线可能接入的具体技术对象。", "expert_analysis", "evidence_chain"),
-            _agent_step("辅助可集成性复核", "只把组件信息提供给浦江负责人判断可集成性；已封装接口或技术上可集成不等于正式纳管，不能单独支持 D6.1。", "branch_judgments[D6.1]", "counterevidence"),
+            _agent_step("辅助可集成性复核", "组件信息用于说明被调用对象；只有封装接口或可集成性不能证明实际接入，须查真实任务输入输出。", "branch_judgments[D6.1]", "counterevidence"),
             _agent_step("禁止推断调用运行", "该组件不更新 D6.2/D6.3；实际调用、持续服务和维护状态必须来自平台或流程侧记录或负责人确认。", "branch_judgments[D6.2]", "branch_judgments[D6.3]", "missing_inputs"),
         ],
     },
     ("D6", "external_search"): {
         "input_path": "adapted_evidence.external_search",
         "agent_use_steps": [
-            _agent_step("核验主线正式身份", "用浦江官方目录、接口、服务或部署原文确认成果是否被正式纳管以及处于哪一主线位置；新闻稿只作线索，不能单独支持 D6.1。", "branch_judgments[D6.1]", "basis", "counterevidence"),
-            _agent_step("核验平台或流程侧实际调用", "核对平台或流程侧调用主体、真实任务、日志和日期，确认不是项目内部互调后再支持 D6.2。", "branch_judgments[D6.2]", "evidence_chain", "basis"),
-            _agent_step("核验持续运行", "依据持续周期、维护责任、版本更新和负责人复核判断 D6.3；公开未检出不能判未接入，关键事实无公开记录时提出面向浦江负责人的单一复核问题。", "branch_judgments[D6.3]", "missing_inputs", "expert_question"),
+            _agent_step("核验主线正式身份", "用项目或组织平台官方目录、接口、服务或部署原文确认成果是否被正式纳管以及处于哪一主线位置；新闻稿只作线索，不能单独支持 D6.1。", "branch_judgments[D6.1]", "basis", "counterevidence"),
+            _agent_step("核验平台或流程侧实际调用", "核对调用主体、真实任务、日志、日期和跨环节输出；内部协同与外部流程均可支持D6.2，须保留关系区别。", "branch_judgments[D6.2]", "evidence_chain", "basis"),
+            _agent_step("核验持续运行", "依据持续周期、维护责任、版本更新和负责人复核判断 D6.3；公开未检出不能判未接入，关键事实无公开记录时提出面向项目或组织平台负责人的单一复核问题。", "branch_judgments[D6.3]", "missing_inputs", "expert_question"),
         ],
     },
     ("D7", "internal_search"): {
@@ -729,8 +729,8 @@ HARD_RULES = [
     {
         "rule_id": "B07",
         "name": "项目主线集成边界",
-        "effect": "D6只认项目或组织主线的正式接入、实际调用和持续运行；项目内部课题调用、普通平台接入或未来可接入均不得计入D6。",
-        "flexibility": "项目内部调用和共享资产进入项目系统性/课题协同单独判断；尚未接入时可记录集成价值，但不能据此判D6成立。",
+        "effect": "D6按内部实际接入、多环节或外部流程协同、稳定平台逐档判断；计划不能代替实际使用，内部协同不因未正式纳管而被排除。",
+        "flexibility": "同一协同事实可分别说明本成果D6与项目协同，但不能重复计数；形成流程的工具或方法与流程产出的产品分别判断。",
     },
     {
         "rule_id": "B08",
@@ -788,7 +788,7 @@ LAYER_SUMMARY_METHOD = {
     "system_collaboration": {
         "name": "项目系统性 / 课题协同性",
         "question": "课题是否形成数据、模型、平台、实验或任务链上的真实协作？",
-        "rule": "从任务书设计关系到真实输入输出、跨课题任务链、反馈闭环、持续重复运行逐级核查。每条链说明谁给谁什么、任务、结果、调用与反馈证据。单独判断，不并入任何D维度；项目主线只归D6。",
+        "rule": "从任务书设计关系到真实输入输出、跨课题任务链、反馈闭环、持续重复运行逐级核查。每条链说明谁给谁什么、任务、结果、调用与反馈证据。项目协同单独汇总；同一事实适用于具体成果D6时可引用但不得重复计数，不把整条流程作用转记给产物。",
     },
 }
 

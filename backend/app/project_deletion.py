@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from sqlalchemy import select, delete, or_
 from .config import settings
 from .models import (Project, ProjectMember, Material, PipelineJob, Ticket, OutcomeSubmission,
-                     Task, Result, ResultVersion, QueryRecord, Audit, uid)
+                     Task, Result, ResultVersion, QueryRecord, Audit, uid, ReviewAssignment, ReviewDecision, EvaluationFollowup)
 from .project_service import job_directory
 from .pipeline_store import PipelineStore
 
@@ -67,6 +67,8 @@ def remove_records(db, jobs, tickets, tasks, actor, *, project=None, materials=(
     if project: predicate = or_(predicate, Result.project_id == project.id)
     result_ids = list(db.scalars(select(Result.id).where(predicate)))
     db.execute(delete(QueryRecord).where(QueryRecord.result_id.in_(result_ids)))
+    for model in (ReviewAssignment,ReviewDecision,EvaluationFollowup):
+        db.execute(delete(model).where(model.result_id.in_(result_ids)))
     db.execute(delete(ResultVersion).where(ResultVersion.result_id.in_(result_ids)))
     db.execute(delete(Result).where(Result.id.in_(result_ids)))
     db.execute(delete(OutcomeSubmission).where(OutcomeSubmission.ticket_id.in_(ticket_ids)))

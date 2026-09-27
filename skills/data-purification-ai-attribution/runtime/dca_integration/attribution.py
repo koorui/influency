@@ -5,6 +5,7 @@ from typing import Any
 
 from .common import finite_number, read_json, require_keys, require_unique_ids, write_csv, write_json
 from .reports import render_attribution_report, render_unresolved_report
+from .comparison import KINDS, calculate_comparison
 
 
 _SEARCH_CATEGORIES = {
@@ -25,19 +26,30 @@ def _validate(data: dict[str, Any]) -> None:
     for field in ("evidence", "factors", "comparisons", "claims"):
         if not isinstance(data[field], list):
             raise ValueError(f"{field} must be an array")
-    if not data["factors"]:
-        raise ValueError("factors must be a non-empty array")
     evidence_ids = require_unique_ids(data["evidence"], "evidence")
     factor_ids = require_unique_ids(data["factors"], "factors")
     comparison_ids = require_unique_ids(data["comparisons"], "comparisons")
     claim_ids = require_unique_ids(data["claims"], "claims")
     del comparison_ids
+    for factor in data['factors']:
+        require_keys(factor, ['id', 'name'], 'factor')
+        if factor.get('role_in_attribution', 'contributor') not in {'baseline','contributor','target'}:
+            raise ValueError('unsupported factor role')
+        if 'evaluate_independent_increment' in factor and type(factor['evaluate_independent_increment']) is not bool:
+            raise ValueError('evaluate_independent_increment must be boolean')
     for comparison in data["comparisons"]:
         require_keys(comparison, ["id", "name", "baseline", "observed", "direction", "comparability_status", "evidence_ids", "involved_factor_ids", "isolated_factor_ids"], f"comparison {comparison.get('id', '')}")
         if comparison["direction"] not in {"lower_is_better", "higher_is_better", "descriptive_only"}:
             raise ValueError(f"comparison {comparison['id']} has unsupported direction")
         if comparison["comparability_status"] not in {"established", "partial", "unknown"}:
             raise ValueError(f"comparison {comparison['id']} has unsupported comparability_status")
+        if comparison.get('comparison_kind','unspecified') not in KINDS:
+            raise ValueError('unsupported comparison_kind')
+        if not comparison['evidence_ids'] or len(set(comparison['isolated_factor_ids'])) > 1:
+            raise ValueError('comparison needs evidence and may isolate at most one factor')
+        for key in ('baseline_evidence_ids','observed_evidence_ids','control_evidence_ids'):
+            if set(comparison.get(key,[]))-set(comparison['evidence_ids']):
+                raise ValueError('comparison side/control cites unknown evidence')
         for side in ("baseline", "observed"):
             if not isinstance(comparison[side], dict):
                 raise ValueError(f"comparison {comparison['id']} {side} must be an object")
@@ -45,7 +57,7 @@ def _validate(data: dict[str, Any]) -> None:
             finite_number(comparison[side]["value"], f"comparison {comparison['id']} {side}.value")
         baseline_unit = str(comparison["baseline"].get("unit", "")).strip()
         observed_unit = str(comparison["observed"].get("unit", "")).strip()
-        if baseline_unit and observed_unit and baseline_unit != observed_unit:
+        if comparison["comparability_status"]=="established" and baseline_unit and observed_unit and baseline_unit != observed_unit:
             raise ValueError(f"comparison {comparison['id']} uses inconsistent units")
         unknown_evidence = set(comparison["evidence_ids"]) - evidence_ids
         unknown_factors = (set(comparison["involved_factor_ids"]) | set(comparison["isolated_factor_ids"])) - factor_ids
@@ -79,52 +91,13 @@ def _validate(data: dict[str, Any]) -> None:
     additional_ids = require_unique_ids(additional, "additional_unresolved_items")
     if search_ids & additional_ids:
         raise ValueError("search finding and additional unresolved item IDs must not overlap")
+    for item in additional:
+        if set(item.get('evidence_ids',[]))-evidence_ids or set(item.get('related_claim_ids',[]))-claim_ids:
+            raise ValueError('additional unresolved item references unknown evidence or claims')
 
 
-def _calculate_comparison(comparison: dict[str, Any]) -> dict[str, Any]:
-    baseline = finite_number(comparison["baseline"]["value"], f"comparison {comparison['id']} baseline.value")
-    observed = finite_number(comparison["observed"]["value"], f"comparison {comparison['id']} observed.value")
-    direction = comparison["direction"]
-    if baseline == 0:
-        percent_change = None
-        ratio = None
-    else:
-        if direction == "lower_is_better":
-            percent_change = (baseline - observed) / baseline * 100
-            ratio = baseline / observed - 1 if observed else None
-        elif direction == "higher_is_better":
-            percent_change = (observed - baseline) / abs(baseline) * 100
-            ratio = observed / baseline - 1
-        elif direction == "descriptive_only":
-            percent_change = (observed - baseline) / abs(baseline) * 100
-            ratio = observed / baseline - 1
-        else:
-            raise ValueError(f"comparison {comparison['id']} has unsupported direction {direction}")
-    if direction == "descriptive_only":
-        effect_outcome = "descriptive"
-    elif direction == "lower_is_better":
-        effect_outcome = "improved" if observed < baseline else "worsened" if observed > baseline else "no_change"
-    else:
-        effect_outcome = "improved" if observed > baseline else "worsened" if observed < baseline else "no_change"
-    return {
-        "id": comparison["id"],
-        "name": comparison["name"],
-        "baseline_label": comparison["baseline"].get("label", "baseline"),
-        "baseline_value": baseline,
-        "observed_label": comparison["observed"].get("label", "observed"),
-        "observed_value": observed,
-        "unit": comparison["observed"].get("unit") or comparison["baseline"].get("unit", ""),
-        "direction": comparison["direction"],
-        "comparability_status": comparison["comparability_status"],
-        "effect_outcome": effect_outcome,
-        "absolute_difference": round(observed - baseline, 8),
-        "percent_change_from_baseline": round(percent_change, 8) if percent_change is not None else None,
-        "ratio_change": round(ratio, 8) if ratio is not None else None,
-        "involved_factor_ids": comparison["involved_factor_ids"],
-        "isolated_factor_ids": comparison["isolated_factor_ids"],
-        "evidence_ids": comparison["evidence_ids"],
-        "notes": comparison.get("notes", ""),
-    }
+# Compatibility name for callers; all paths use the semantic comparison engine.
+_calculate_comparison = calculate_comparison
 
 
 def _factor_results(data: dict[str, Any], comparisons: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -132,19 +105,24 @@ def _factor_results(data: dict[str, Any], comparisons: list[dict[str, Any]]) -> 
     for factor in data["factors"]:
         factor_id = factor["id"]
         role_in_attribution = factor.get("role_in_attribution", "contributor")
-        isolated_by = [item["id"] for item in comparisons if factor_id in item["isolated_factor_ids"]]
-        positive_isolated = [item for item in comparisons if factor_id in item["isolated_factor_ids"] and item["effect_outcome"] == "improved"]
+        causal = [item for item in comparisons if item.get('causal_eligible') and factor.get('evaluate_independent_increment',False)]
+        isolated_by = [item["id"] for item in causal if factor_id in item["isolated_factor_ids"]]
+        positive_isolated = [item for item in causal if factor_id in item["isolated_factor_ids"] and item["effect_outcome"] == "improved"]
         established_by = [item["id"] for item in positive_isolated if item["comparability_status"] == "established"]
         conditional_by = [item["id"] for item in positive_isolated if item["comparability_status"] == "partial"]
         unknown_by = [item["id"] for item in positive_isolated if item["comparability_status"] == "unknown"]
-        nonpositive_by = [item["id"] for item in comparisons if factor_id in item["isolated_factor_ids"] and item["effect_outcome"] in {"no_change", "worsened"}]
-        descriptive_by = [item["id"] for item in comparisons if factor_id in item["isolated_factor_ids"] and item["effect_outcome"] == "descriptive"]
+        nonpositive_by = [item["id"] for item in causal if factor_id in item["isolated_factor_ids"] and item["effect_outcome"] in {"no_change", "worsened"}]
+        descriptive_by = [item["id"] for item in causal if factor_id in item["isolated_factor_ids"] and item["effect_outcome"] == "descriptive"]
         involved_in = [item["id"] for item in comparisons if factor_id in item["involved_factor_ids"]]
         factor_claims = [claim for claim in data["claims"] if claim.get("factor_id") == factor_id]
         evidence_ids = sorted({evidence_id for claim in factor_claims for evidence_id in claim.get("evidence_ids", [])})
+        evidence_ids = sorted(set(evidence_ids) | {e for item in comparisons if factor_id in item['involved_factor_ids'] for e in item['evidence_ids']})
         if role_in_attribution == "baseline":
             status = "baseline_reference"
             conclusion = "该因素是本次比较的基线路线，不作为待证明的独立贡献因素。"
+        elif established_by and nonpositive_by:
+            status = 'conflicting_comparisons'
+            conclusion = '可比对照同时包含正向与非正向结果；须核对适用任务和条件，不选择性汇总为正向净贡献。'
         elif established_by:
             status = "direct_increment_supported"
             conclusion = "现有比较在已锁定的条件下单独考察了该因素，可支持所列范围内的增量判断。"
@@ -204,6 +182,7 @@ def _unresolved_items(data: dict[str, Any], factor_results: list[dict[str, Any]]
 
     for factor in factor_results:
         if factor["status"] not in {
+            "conflicting_comparisons",
             "participation_supported_increment_not_isolated",
             "conditional_increment_supported",
             "increment_not_confirmed_due_to_comparability",
@@ -219,7 +198,9 @@ def _unresolved_items(data: dict[str, Any], factor_results: list[dict[str, Any]]
         }
         if any(factor_claim_ids & set(item.get("related_claim_ids", [])) for item in unresolved):
             continue
-        if factor["status"] == "conditional_increment_supported":
+        if factor['status']=='conflicting_comparisons':
+            reason = '正向和非正向对照并存，需要解释各自适用条件及矛盾。'
+        elif factor["status"] == "conditional_increment_supported":
             reason = "比较条件仅部分可比，尚不足以形成无条件的独立增量判断。"
         elif factor["status"] == "increment_not_confirmed_due_to_comparability":
             reason = "比较的同条件基础尚未确认，即使结果方向为改善也不能归因于该因素。"
@@ -256,7 +237,7 @@ def run_attribution(input_path: str | Path, output_dir: str | Path) -> dict[str,
     """Generate bounded contribution attribution from structured evidence and Search findings."""
     data = read_json(input_path)
     _validate(data)
-    comparisons = [_calculate_comparison(item) for item in data["comparisons"]]
+    comparisons = [calculate_comparison(item) for item in data["comparisons"]]
     factor_results = _factor_results(data, comparisons)
     unresolved = _unresolved_items(data, factor_results)
     direct = [item["factor_name"] for item in factor_results if item["status"] == "direct_increment_supported"]
@@ -264,6 +245,11 @@ def run_attribution(input_path: str | Path, output_dir: str | Path) -> dict[str,
     unconfirmed = [item["factor_name"] for item in factor_results if item["status"] == "increment_not_confirmed_due_to_comparability"]
     participating = [item["factor_name"] for item in factor_results if item["status"] == "participation_supported_increment_not_isolated" and item["role_in_attribution"] != "baseline"]
     conclusion_parts: list[str] = []
+    conflicting = [item['factor_name'] for item in factor_results if item['status']=='conflicting_comparisons']
+    if conflicting:
+        conclusion_parts.append('对照结果方向不一致、暂不能形成统一净贡献结论的因素：'+'、'.join(conflicting))
+    if not data['factors']:
+        conclusion_parts.append('本轮未识别可归因因素，不进行因素级贡献判断；不据此认定成果无效或AI没有作用')
     if direct:
         conclusion_parts.append("在已锁定比较条件下支持增量的因素：" + "、".join(direct))
     if conditional:
@@ -278,6 +264,7 @@ def run_attribution(input_path: str | Path, output_dir: str | Path) -> dict[str,
     result = {
         "schema_version": "dca-attribution-result/v1",
         "status": "completed",
+        "attribution_applicability": 'not_established' if not data['factors'] else 'applicable',
         "project": data["project"],
         "target": data["target"],
         "factor_results": factor_results,

@@ -116,6 +116,51 @@ class ResultVersion(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
 
 
+class ReviewAssignment(Base):
+    __tablename__ = 'evaluation_review_assignments'
+    __table_args__ = (UniqueConstraint('result_id','user_id'),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    result_id: Mapped[str] = mapped_column(ForeignKey('evaluation_results.id'), index=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'))
+    assigned_by: Mapped[str] = mapped_column(ForeignKey('users.id'))
+    active: Mapped[int] = mapped_column(Integer, default=1)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
+
+
+class ReviewDecision(Base):
+    __tablename__ = 'evaluation_review_decisions'
+    __table_args__ = (UniqueConstraint('result_id','result_revision','sequence',name='uq_review_sequence'),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    result_id: Mapped[str] = mapped_column(ForeignKey('evaluation_results.id'), index=True)
+    result_revision: Mapped[int] = mapped_column(Integer)
+    sequence: Mapped[int] = mapped_column(Integer)
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'))
+    fact_id: Mapped[str] = mapped_column(String(80))
+    verdict: Mapped[str] = mapped_column(String(30))
+    reason: Mapped[str] = mapped_column(Text)
+    evidence_ids: Mapped[list] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
+
+
+class EvaluationFollowup(Base):
+    __tablename__ = 'evaluation_followup_tasks'
+    __table_args__ = (UniqueConstraint('result_id','result_revision','source_key'),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    result_id: Mapped[str] = mapped_column(ForeignKey('evaluation_results.id'), index=True)
+    result_revision: Mapped[int] = mapped_column(Integer)
+    source_key: Mapped[str] = mapped_column(String(80))
+    title: Mapped[str] = mapped_column(String(200))
+    kind: Mapped[str] = mapped_column(String(30))
+    body: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(30), default='draft')
+    revision: Mapped[int] = mapped_column(Integer, default=1)
+    owner_id: Mapped[str | None] = mapped_column(ForeignKey('users.id'), nullable=True)
+    deadline: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    resolution_refs: Mapped[list] = mapped_column(JSON, default=list)
+    edited_by: Mapped[str] = mapped_column(ForeignKey('users.id'))
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=now)
+
+
 class Audit(Base):
     __tablename__ = 'audit_logs'
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)

@@ -211,6 +211,24 @@
           },
           "title": "Gaps",
           "type": "array"
+        },
+        "assessment_state": {
+          "anyOf": [
+            {
+              "enum": [
+                "assessed",
+                "insufficient_evidence",
+                "not_applicable",
+                "conflict",
+                "not_assessed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Assessment State"
         }
       },
       "required": [
@@ -218,7 +236,8 @@
         "grade",
         "conclusion",
         "evidence_ids",
-        "gaps"
+        "gaps",
+        "assessment_state"
       ],
       "title": "Dimension",
       "type": "object"
@@ -332,6 +351,243 @@
       "title": "Evidence",
       "type": "object"
     },
+    "FactLedger": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "outcome-facts.v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "project_id": {
+          "title": "Project Id",
+          "type": "string"
+        },
+        "outcome_id": {
+          "title": "Outcome Id",
+          "type": "string"
+        },
+        "primary_object_id": {
+          "title": "Primary Object Id",
+          "type": "string"
+        },
+        "evaluation_cutoff": {
+          "title": "Evaluation Cutoff",
+          "type": "string"
+        },
+        "impact_facts": {
+          "items": {
+            "$ref": "#/$defs/ImpactFact"
+          },
+          "title": "Impact Facts",
+          "type": "array"
+        },
+        "claims": {
+          "items": {
+            "$ref": "#/$defs/Claim"
+          },
+          "title": "Claims",
+          "type": "array"
+        },
+        "value_and_attribution": {
+          "$ref": "#/$defs/ValueAxes"
+        }
+      },
+      "required": [
+        "schema_version",
+        "project_id",
+        "outcome_id",
+        "primary_object_id",
+        "evaluation_cutoff",
+        "impact_facts",
+        "claims",
+        "value_and_attribution"
+      ],
+      "title": "FactLedger",
+      "type": "object"
+    },
+    "ImpactFact": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "category": {
+          "enum": [
+            "F1",
+            "F2",
+            "F3",
+            "F4",
+            "F5",
+            "F6"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "object_id": {
+          "minLength": 1,
+          "title": "Object Id",
+          "type": "string"
+        },
+        "fact_text": {
+          "minLength": 1,
+          "title": "Fact Text",
+          "type": "string"
+        },
+        "assessment_status": {
+          "enum": [
+            "completed",
+            "pending",
+            "not_applicable"
+          ],
+          "title": "Assessment Status",
+          "type": "string"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "enum": [
+                "verified",
+                "possibly_happened_but_unverified",
+                "not_found_as_of_cutoff",
+                "conflict"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "State"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "counter_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Counter Evidence Ids",
+          "type": "array"
+        },
+        "event_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Event Date"
+        },
+        "time_basis": {
+          "title": "Time Basis",
+          "type": "string"
+        },
+        "search_coverage": {
+          "title": "Search Coverage",
+          "type": "string"
+        },
+        "needs_expert_confirmation": {
+          "title": "Needs Expert Confirmation",
+          "type": "boolean"
+        },
+        "notes": {
+          "title": "Notes",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "object_id",
+        "fact_text",
+        "assessment_status",
+        "state",
+        "evidence_ids",
+        "counter_evidence_ids",
+        "event_date",
+        "time_basis",
+        "search_coverage",
+        "needs_expert_confirmation",
+        "notes"
+      ],
+      "title": "ImpactFact",
+      "type": "object"
+    },
+    "ImpactUse": {
+      "additionalProperties": false,
+      "properties": {
+        "object_id": {
+          "minLength": 1,
+          "title": "Object Id",
+          "type": "string"
+        },
+        "user": {
+          "minLength": 1,
+          "title": "User",
+          "type": "string"
+        },
+        "task": {
+          "minLength": 1,
+          "title": "Task",
+          "type": "string"
+        },
+        "result": {
+          "minLength": 1,
+          "title": "Result",
+          "type": "string"
+        },
+        "relationship": {
+          "enum": [
+            "internal",
+            "collaborator",
+            "independent",
+            "unknown"
+          ],
+          "title": "Relationship",
+          "type": "string"
+        },
+        "relationship_basis": {
+          "title": "Relationship Basis",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "independence_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Independence Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "object_id",
+        "user",
+        "task",
+        "result",
+        "relationship",
+        "relationship_basis",
+        "evidence_ids",
+        "independence_evidence_ids"
+      ],
+      "title": "ImpactUse",
+      "type": "object"
+    },
     "Judgment": {
       "additionalProperties": false,
       "properties": {
@@ -386,12 +642,28 @@
         "body": {
           "title": "Body",
           "type": "string"
+        },
+        "fact_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Fact Ids",
+          "type": "array"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
         }
       },
       "required": [
         "title",
         "summary",
-        "body"
+        "body",
+        "fact_ids",
+        "evidence_ids"
       ],
       "title": "NextTask",
       "type": "object"
@@ -418,11 +690,33 @@
               "type": "null"
             }
           ]
+        },
+        "observation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NextTask"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "maintenance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NextTask"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
         "project_material",
-        "expert_review"
+        "expert_review",
+        "observation",
+        "maintenance"
       ],
       "title": "NextTasks",
       "type": "object"
@@ -590,6 +884,15 @@
           "type": "integer"
         },
         "level_name": {
+          "description": "纯中文等级名称，不包含L编号",
+          "enum": [
+            "成果形成与验证",
+            "局部作用验证",
+            "外部应用验证",
+            "专业方向显著影响",
+            "领域基础能力",
+            "重大引领影响"
+          ],
           "title": "Level Name",
           "type": "string"
         },
@@ -613,12 +916,71 @@
       ],
       "title": "Upgrade",
       "type": "object"
+    },
+    "ValueAxes": {
+      "additionalProperties": false,
+      "properties": {
+        "scientific_or_technical_value": {
+          "$ref": "#/$defs/ValueJudgment"
+        },
+        "project_additionality": {
+          "$ref": "#/$defs/ValueJudgment"
+        },
+        "ai_contribution": {
+          "$ref": "#/$defs/ValueJudgment"
+        },
+        "future_potential": {
+          "$ref": "#/$defs/ValueJudgment"
+        },
+        "management_action": {
+          "$ref": "#/$defs/ValueJudgment"
+        }
+      },
+      "required": [
+        "scientific_or_technical_value",
+        "project_additionality",
+        "ai_contribution",
+        "future_potential",
+        "management_action"
+      ],
+      "title": "ValueAxes",
+      "type": "object"
+    },
+    "ValueJudgment": {
+      "additionalProperties": false,
+      "properties": {
+        "conclusion": {
+          "title": "Conclusion",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "limitations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Limitations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "conclusion",
+        "evidence_ids",
+        "limitations"
+      ],
+      "title": "ValueJudgment",
+      "type": "object"
     }
   },
   "additionalProperties": false,
   "properties": {
     "schema_version": {
-      "const": "wu-outcome-v2.1",
+      "const": "outcome-evaluation.v3",
       "title": "Schema Version",
       "type": "string"
     },
@@ -654,10 +1016,9 @@
     },
     "evaluation_status": {
       "enum": [
-        "formal",
-        "preliminary",
-        "insufficient_project_context",
-        "needs_scope_confirmation"
+        "system_preliminary",
+        "needs_scope_confirmation",
+        "insufficient_project_context"
       ],
       "title": "Evaluation Status",
       "type": "string"
@@ -767,6 +1128,44 @@
       ],
       "title": "External Search Status",
       "type": "string"
+    },
+    "impact_uses": {
+      "items": {
+        "$ref": "#/$defs/ImpactUse"
+      },
+      "title": "Impact Uses",
+      "type": "array"
+    },
+    "fact_ledger": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FactLedger"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "attainment_fact_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Attainment Fact Ids",
+      "type": "array"
+    },
+    "boundary_fact_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Boundary Fact Ids",
+      "type": "array"
+    },
+    "stage_references": {
+      "items": {
+        "$ref": "#/$defs/Upgrade"
+      },
+      "title": "Stage References",
+      "type": "array"
     }
   },
   "required": [
@@ -790,8 +1189,13 @@
     "claims",
     "dimensions",
     "ai_attribution",
-    "external_search_status"
+    "external_search_status",
+    "impact_uses",
+    "fact_ledger",
+    "attainment_fact_ids",
+    "boundary_fact_ids",
+    "stage_references"
   ],
-  "title": "Assessment",
+  "title": "CurrentAssessment",
   "type": "object"
 }

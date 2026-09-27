@@ -23,6 +23,7 @@ class Evidence(StrictModel):
     supports: str = ''
     does_not_prove: str = ''
     verification: str = 'project_statement'
+    date: str | None = None
 
 
 class Dimension(StrictModel):
@@ -36,8 +37,10 @@ class Dimension(StrictModel):
 class FollowUp(StrictModel):
     title: str = Field(min_length=1, max_length=200)
     detail: str = Field(max_length=10000)
-    kind: Literal['material', 'expert', 'improvement'] = 'material'
+    kind: Literal['material', 'expert', 'improvement','maintenance'] = 'material'
     body: str = ''
+    fact_ids: list[str] = Field(default_factory=list)
+    evidence_ids: list[str] = Field(default_factory=list)
 
 
 class Upgrade(StrictModel):
@@ -61,13 +64,22 @@ class Evaluation(StrictModel):
     evidence: list[Evidence] = Field(default_factory=list, max_length=200)
     follow_ups: list[FollowUp] = Field(default_factory=list, max_length=50)
     is_demo: bool = False
-    evaluation_status: Literal['formal','preliminary','insufficient_project_context','needs_scope_confirmation'] = 'preliminary'
+    evaluation_status: Literal['formal','preliminary','insufficient_project_context','needs_scope_confirmation','system_preliminary'] = 'preliminary'
     rubric_id: str = ''
     reason_evidence_refs: list[list[str]] = Field(default_factory=list)
     boundary_gap: str = ''
     upgrades: list[Upgrade] = Field(default_factory=list)
     project_name: str = ''
     candidates: list[str] = Field(default_factory=list)
+    fact_ledger: dict | None = None
+    attainment_fact_ids: list[str] = Field(default_factory=list)
+    boundary_fact_ids: list[str] = Field(default_factory=list)
+    dimension_audit: list[dict] = Field(default_factory=list)
+    history_context: dict = Field(default_factory=dict)
+    rule_version: str | None = None
+    evaluation_cutoff: str | None = None
+    adjudication_status: Literal['system_preliminary'] = 'system_preliminary'
+
 
     @model_validator(mode='after')
     def references_exist(self):
@@ -83,7 +95,7 @@ class Evaluation(StrictModel):
             raise ValueError('等级理由引用不存在的证据')
         if self.reason_evidence_refs and len(self.reason_evidence_refs) != len(self.reasons):
             raise ValueError('理由和证据索引必须逐项对应')
-        if self.rubric_id and self.level and self.evaluation_status != 'formal':
+        if self.rubric_id and self.level and self.evaluation_status not in ('formal','system_preliminary'):
             raise ValueError('未完成正式评价时不可填写等级')
         if any(e.url and not e.url.startswith(('http://','https://')) for e in self.evidence):
             raise ValueError('证据链接必须是HTTP(S)地址')

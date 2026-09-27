@@ -31,6 +31,11 @@ class Comparison(StrictModel):
     involved_factor_ids: list[str]
     isolated_factor_ids: list[str]
     notes: str
+    comparison_kind: Literal['threshold_check','performance_change','external_benchmark','causal_increment','unspecified'] = 'unspecified'
+    baseline_evidence_ids: list[str] = Field(default_factory=list)
+    observed_evidence_ids: list[str] = Field(default_factory=list)
+    control_evidence_ids: list[str] = Field(default_factory=list)
+    controlled_conditions: str = ''
 
     @model_validator(mode='after')
     def attribution_boundary(self):
@@ -40,8 +45,10 @@ class Comparison(StrictModel):
             raise ValueError('隔离因素必须属于本次比较因素')
         if len(set(self.isolated_factor_ids))>1:
             raise ValueError('一个对照不能同时证明多个因素各自的独立贡献；请拆分独立对照或保留组合效果')
-        if self.baseline.unit.strip()!=self.observed.unit.strip():
+        if self.comparability_status=='established' and self.baseline.unit.strip()!=self.observed.unit.strip():
             raise ValueError('比较两侧单位不一致，请核实换算依据')
+        if not set(self.baseline_evidence_ids+self.observed_evidence_ids+self.control_evidence_ids).issubset(self.evidence_ids):
+            raise ValueError('基线、观测和对照依据须属于本项比较证据')
         return self
 
 
@@ -75,8 +82,10 @@ class AttributionComparison(Comparison):
             raise ValueError('隔离因素必须属于本次比较因素')
         if len(set(self.isolated_factor_ids))>1:
             raise ValueError('一个对照不能同时证明多个因素各自的独立贡献')
-        if self.baseline.unit.strip() and self.observed.unit.strip() and self.baseline.unit.strip()!=self.observed.unit.strip():
+        if self.comparability_status=='established' and self.baseline.unit.strip() and self.observed.unit.strip() and self.baseline.unit.strip()!=self.observed.unit.strip():
             raise ValueError('比较两侧单位不一致，请核实换算依据')
+        if not set(self.baseline_evidence_ids+self.observed_evidence_ids+self.control_evidence_ids).issubset(self.evidence_ids):
+            raise ValueError('比较两侧及对照引用不属于比较证据')
         return self
 
 
@@ -93,8 +102,29 @@ class IntakeCandidate(StrictModel):
     evidence_ids: list[str]
 
 
+class EvaluationObject(StrictModel):
+    id: str = Field(min_length=1)
+    name: str = Field(min_length=1)
+    kind: str
+    version: str
+    relation_to_primary: Literal['primary','method','product','component','prior_basis']
+    evidence_ids: list[str] = Field(min_length=1)
+
+
+class UseRecord(StrictModel):
+    object_id: str
+    phase: Literal['validation','real_task']
+    user: str
+    task: str
+    result: str
+    relationship: Literal['internal','collaborator','independent','unknown']
+    relationship_basis: str
+    event_date: str | None
+    evidence_ids: list[str] = Field(min_length=1)
+
+
 class WuIntake(StrictModel):
-    status: Literal['ready','needs_scope_confirmation','insufficient_project_context']
+    status: Literal['ready','needs_scope_confirmation','insufficient_project_context','insufficient_validation_evidence']
     project_name: str | None
     canonical_name: str | None
     confidence: Literal['high','medium','low']
@@ -105,6 +135,9 @@ class WuIntake(StrictModel):
     comparisons: list[Comparison]
     claims: list[PreparedClaim]
     gaps: list[str]
+    evaluation_objects: list[EvaluationObject] = Field(default_factory=list)
+    primary_object_id: str | None = None
+    use_records: list[UseRecord] = Field(default_factory=list)
 
     @model_validator(mode='after')
     def integrity(self):
@@ -116,6 +149,25 @@ class WuIntake(StrictModel):
             if not set(item.evidence_ids).issubset(ids):raise ValueError('成果定位引用不存在的证据')
         if self.status=='ready' and (not self.project_name or not self.canonical_name or len(self.candidates)!=1):
             raise ValueError('进入评价需要明确项目和唯一成果')
+        factors={f.id for f in self.factors}
+        if len(factors)!=len(self.factors):raise ValueError('贡献因素编号重复')
+        if len({c.id for c in self.comparisons})!=len(self.comparisons) or len({c.id for c in self.claims})!=len(self.claims):
+            raise ValueError('比较或声明编号重复')
+        if any(set(c.involved_factor_ids+c.isolated_factor_ids)-factors for c in self.comparisons):
+            raise ValueError('比较引用不存在的贡献因素')
+        if any(c.factor_id and c.factor_id not in factors for c in self.claims):
+            raise ValueError('声明引用不存在的贡献因素')
+        objects={o.id for o in self.evaluation_objects}
+        if len(objects)!=len(self.evaluation_objects):raise ValueError('评价对象编号重复')
+        if self.evaluation_objects:
+            primary=[o for o in self.evaluation_objects if o.relation_to_primary=='primary']
+            if len(primary)!=1 or primary[0].id!=self.primary_object_id:
+                raise ValueError('必须明确唯一主评价对象，关联方法和产品分别记录')
+        elif self.primary_object_id or self.use_records:
+            raise ValueError('使用事实必须对应已定义的评价对象')
+        if any(set(o.evidence_ids)-ids for o in [*self.evaluation_objects,*self.use_records]):
+            raise ValueError('评价对象或使用事实引用不存在的证据')
+        if any(u.object_id not in objects for u in self.use_records):raise ValueError('使用事实引用未知对象')
         return self
 
 
@@ -127,6 +179,14 @@ class ScopedEvidence(StrictModel):
     locator: str = Field(min_length=1)
     text: str = Field(min_length=1)
     url: str | None = None
+
+
+class CurrentWuIntake(WuIntake):
+    @model_validator(mode='after')
+    def object_required_for_new_run(self):
+        if self.status in ('ready','insufficient_validation_evidence') and (not self.evaluation_objects or not self.primary_object_id):
+            raise ValueError('新建卡须明确主评价对象及关联对象边界')
+        return self
 
 
 class ReplayFinding(StrictModel):
@@ -170,7 +230,7 @@ class AttributionPreparation(StrictModel):
     outcome_id: str
     outcome_name: str
     evidence: list[ScopedEvidence]
-    factors: list[dict] = Field(min_length=1)
+    factors: list[dict]
     comparisons: list[dict]
     claims: list[dict]
 

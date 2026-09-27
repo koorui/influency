@@ -1,6 +1,11 @@
 {
-  "version": "grading-20260925-1930",
+  "version": "grading-20260927-coordinated-v5",
   "source": "科研成果六级影响力分级及理论依据-09251930.docx",
+  "supplementary_sources": [
+    "AI时代科研评价改革与六级影响力方法研究-综合修订版.docx",
+    "科研成果六级影响力评价（专家长图）"
+  ],
+  "decision_guidance": "references/expert-method.md",
   "levels": {
     "L1": {
       "name": "成果形成与验证",
@@ -70,5 +75,56 @@
       "theory": "REF 关于多元影响证据的评价要求；DORA 关于定量与定性证据结合的原则。[8][12]"
     }
   },
-  "completion_policy": "Every completed evaluation has explicit L1-L6 and seven G1-G5 grades; evidence gaps bound the conclusion, never fabricate facts."
+  "completion_policy": "Complete D1-D7 review states; assessed requires evidence-backed G1-G5, insufficient_evidence/not_applicable/conflict require null. Impact L1-L6 may be null when decisive facts are unresolved. System preliminary is not expert confirmation.",
+  "grade_criteria": {
+    "D1": [
+      "提出问题或方案",
+      "完成内部验证",
+      "形成清楚、可比较的改进",
+      "经外部验证达到专业领先",
+      "推动技术前沿或形成新范式"
+    ],
+    "D2": [
+      "沿用已有基础",
+      "形成项目期适配或改进",
+      "形成边界清楚的新方法或产品",
+      "原创路线获独立确认",
+      "形成基础性原创并被广泛沿用"
+    ],
+    "D3": [
+      "尚无独立关注",
+      "成果公开并开始传播",
+      "出现独立引用、比较或跟进",
+      "多团队持续跟进并形成方向影响",
+      "改变研究议题或学术路径"
+    ],
+    "D4": [
+      "尚不可获得",
+      "已经公开或可申请获得",
+      "有独立团队成功复用",
+      "形成持续复用和开发群体",
+      "成为广泛依赖的开放基础设施"
+    ],
+    "D5": [
+      "尚未进入真实任务",
+      "在项目内部真实任务中使用",
+      "独立外部团队实际使用",
+      "多家单位持续用于专业工作",
+      "成为多个领域的常规能力"
+    ],
+    "D6": [
+      "单点成果",
+      "接入项目内部流程",
+      "与多环节或外部流程协同",
+      "成为稳定平台或主线能力",
+      "成为跨平台、跨领域基础能力"
+    ],
+    "D7": [
+      "主要为项目方自述",
+      "取得独立第三方的具体评测或专业评价",
+      "获得独立同行实质采用或多项认可",
+      "获得高层次采纳、标准或权威认可",
+      "形成跨领域广泛共识"
+    ]
+  }
 }

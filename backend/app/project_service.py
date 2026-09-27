@@ -10,7 +10,7 @@ from .models import Project, ProjectMember, Material, PipelineJob, Ticket, Resul
 from .pipeline_store import PipelineStore, STAGES
 
 STEPS = [('成果卡', ('wu_intake',)), ('外部 Search', ('search_replay',)),
-         ('贡献归因', ('attribution',)), ('双层影响力评价', ('wu_evaluation','v19_evaluation','export'))]
+         ('贡献归因', ('attribution',)), ('成果评价与内部审查', ('wu_evaluation','v19_evaluation','export'))]
 
 
 def set_access_code(project):
@@ -48,6 +48,19 @@ def stage_output(job, name):
     return json.loads(path.read_text(encoding='utf-8'))
 
 
+def final_management(job):
+    """A completed finalization supersedes the draft; historical runs keep theirs."""
+    state=PipelineStore(job_directory(job.id)).read()
+    if state['stages']['export']['status']=='succeeded':
+        exported=stage_output(job,'export')
+        if exported.get('management_final'):
+            return exported['management_final']
+        from .evaluation_runtime import CURRENT
+        if state['inputs'].get('runtime_version')==CURRENT:
+            raise ValueError('当前版本缺少协调后的管理者终稿，不能交付初稿')
+    return stage_output(job,'wu_evaluation')
+
+
 def progress(job):
     if not job: return [{'name':name,'status':'pending'} for name,_ in STEPS]
     try: stages = PipelineStore(job_directory(job.id)).read()['stages']
@@ -79,7 +92,7 @@ def ticket_data(db, ticket, administrator=False):
 
 def selected_materials(db, project):
     rows = list(db.scalars(select(Material).where(Material.project_id == project.id,
-        Material.purpose == 'project', Material.use_in_workflow == 1).order_by(Material.created_at)))
+        Material.purpose == 'project', Material.use_in_workflow == 1).order_by(Material.created_at,Material.id)))
     if sum(len(m.text) for m in rows) > settings().codex_max_input_chars - 20000:
         raise HTTPException(422, '项目选用材料正文过长，请管理员缩小默认评测材料范围')
     return [{'id':m.id,'filename':m.filename,'text':m.text} for m in rows]
@@ -106,7 +119,8 @@ def deliver_report(db, job):
     from .skill_loader import contract
     from .codex_adapter import to_report
     from .pipeline_v19 import wrapper
-    assessment = contract.Assessment.model_validate(stage_output(job,'wu_evaluation')['assessment'])
+    management = final_management(job)
+    assessment = contract.Assessment.model_validate(management['assessment'])
     contract.validate_completed_assessment(assessment)
     if assessment.evaluation_status in ('needs_scope_confirmation','insufficient_project_context'):
         raise ValueError('成果范围或上下文尚待确认')
@@ -114,6 +128,9 @@ def deliver_report(db, job):
     if not wrapper().validate_result(v19)['valid']: raise ValueError('双层评价结果不完整')
     stage_output(job, 'export')
     payload = to_report(assessment, [assessment.outcome_resolution.canonical_name or job.title]).model_dump(mode='json')
+    state=PipelineStore(job_directory(job.id)).read()
+    payload['rule_version']=management.get('grading_standard')
+    payload['history_context']={k:state['inputs'].get(k) for k in ('supersedes_result_id','change_reason')}
     for evidence in payload.get('evidence', []):
         if evidence.get('material_id'):
             material = db.get(Material, evidence['material_id'])

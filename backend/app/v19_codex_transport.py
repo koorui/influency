@@ -3,14 +3,15 @@ Credentials remain in the local Codex store. Each call retains its own schema, p
 """
 import json
 import threading
+import time
 from pathlib import Path
 from types import SimpleNamespace
 from pydantic import Field
 from .schema import StrictModel
-from .pipeline_model import execute_json_stage
+from .pipeline_model import execute_json_stage,strict_schema
 from .pipeline_store import atomic_json
 from .codex_adapter import configured_model
-from .skill_loader import SKILL_ROOT
+from .skill_loader import SKILL_ROOT,contract
 from .v19_response_contract import DimensionReply,OutcomeReply,ProjectReply
 
 
@@ -23,7 +24,7 @@ def source_references(value):
     if isinstance(value,dict):
         for key,item in value.items():
             if key=='source_id' and isinstance(item,str) and item:found.add(item)
-            elif key in ('source_ids','decisive_source_ids') and isinstance(item,list):found.update(x for x in item if isinstance(x,str) and x)
+            elif key in ('source_ids','decisive_source_ids','independence_source_ids') and isinstance(item,list):found.update(x for x in item if isinstance(x,str) and x)
             found.update(source_references(item))
     elif isinstance(value,list):
         for item in value:found.update(source_references(item))
@@ -46,8 +47,12 @@ class CodexV19Client:
         self._lock=threading.Lock()
         self._number=0
         self.cache_roots=[Path(p).resolve() for p in cache_roots]
+        # Ordinary input equality, with the actual rule text; no content digests.
+        self.rules={p.relative_to(SKILL_ROOT).as_posix():p.read_text(encoding='utf-8')
+            for p in SKILL_ROOT.rglob('*') if p.is_file() and p.suffix in ('.md','.json','.py','.yaml') and '__pycache__' not in p.parts}
 
     def chat_json(self,system,user,**kwargs):
+        started=time.monotonic()
         with self._lock:
             self._number+=1
             folder=self.root/f'call-{self._number:03d}'
@@ -59,12 +64,35 @@ class CodexV19Client:
             request=payload['v19_input']
             reply_model=DimensionReply if isinstance(request.get('dimension'),dict) else ProjectReply if isinstance(request.get('outcomes'),list) else OutcomeReply if isinstance(request.get('dimensions'),list) and request.get('outcome_id') else ModelReply
             direct=reply_model is not ModelReply
+            from .config import settings
+            reuse={'payload':payload,'schema':strict_schema(reply_model),'model':model,
+                'reasoning_effort':settings().codex_reasoning_effort,'grading_standard':contract.GRADING_VERSION,
+                'rules':self.rules,'transport_revision':'coordination-v5',
+                'transport_source':Path(__file__).read_text(encoding='utf-8'),
+                'executor_source':Path(__file__).with_name('pipeline_model.py').read_text(encoding='utf-8')}
+            atomic_json(folder/'reuse-input.json',reuse)
+            for root in self.cache_roots:
+                for record in root.glob('call-*/reuse-input.json'):
+                    try:
+                        if json.loads(record.read_text(encoding='utf-8'))!=reuse:continue
+                        data=json.loads((record.parent/'parsed-result.json').read_text(encoding='utf-8'))
+                        if direct:reply_model.model_validate(data)
+                        if not isinstance(data,dict):continue
+                        validate_source_references(data,payload)
+                    except (OSError,ValueError,KeyError):continue
+                    atomic_json(folder/'input.json',payload)
+                    atomic_json(folder/'parsed-result.json',data)
+                    atomic_json(folder/'execution.json',{'execution_mode':'verified_cached_response',
+                        'source':str(record.parent),'elapsed_seconds':round(time.monotonic()-started,3),
+                        'model':model,'validation':'exact inputs, rules, schema and source references'})
+                    return SimpleNamespace(ok=True,data=data,text=json.dumps(data,ensure_ascii=False),raw='',model=model,error='',error_type='')
             reply=execute_json_stage(folder,reply_model,payload,
                 'You are the model transport for ONE call of the v19 engine, which the host is already executing. '
                 'Do not launch the v19 scripts or create another pipeline. Apply v19_system_prompt to v19_input. '+
                 ('Return the requested v19 JSON object directly, not a serialized JSON string. Follow the supplied output schema for this call type. ' if direct else 'Return result_json containing the requested complete object. Preserve impact_level/scope_impact_level as applicable. ')+
                 'The code-defined v19 rules are authoritative for this call; do not import Wu-v2 levels. '
                 'No new Search, no invented source IDs. Missing facts remain pending. '
+                'Shared fact IDs are not source IDs: source_ids must cite the original records behind the fact, never its fact ID. '
                 'Every key_facts/evidence_chain entry must contain a nonempty fact, source_ids and outcome_ids. '
                 'An absence of materials belongs in missing_inputs, not in a fact with empty references. Empty fact arrays are allowed. '
                 'Do not omit any of the three branches when judging a D dimension.',
@@ -73,8 +101,10 @@ class CodexV19Client:
             if not isinstance(data,dict):raise ValueError('v19 model output must be an object')
             validate_source_references(data,payload)
             atomic_json(folder/'parsed-result.json',data)
+            atomic_json(folder/'timing.json',{'elapsed_seconds':round(time.monotonic()-started,3),'cached':False})
             return SimpleNamespace(ok=True,data=data,text=json.dumps(data,ensure_ascii=False),raw='',model=model,error='',error_type='')
         except Exception as exc:
+            atomic_json(folder/'timing.json',{'elapsed_seconds':round(time.monotonic()-started,3),'cached':False,'failed':True})
             # The original pipeline owns bounded retries and incomplete-result handling.
             return SimpleNamespace(ok=False,data=None,text='',raw='',model=model,error=str(exc),error_type=type(exc).__name__)
 
@@ -85,7 +115,7 @@ def run_codex_v19(workspace,folder,engine,*,cache_roots=()):
     from .config import settings
     folder.mkdir(parents=True,exist_ok=False)
     client=CodexV19Client(folder/'calls',settings().codex_timeout_seconds,cache_roots=cache_roots)
-    run=IndicatorEvaluationPipeline(client.settings,client).run(workspace,model=client.settings.glm_model,parallelism=1)
+    run=IndicatorEvaluationPipeline(client.settings,client).run(workspace,model=client.settings.glm_model,parallelism=2)
     from metric_judgment.grading_standard import VERSION
     run['grading_standard']=VERSION
     atomic_json(folder/'evaluation-run.json',run)

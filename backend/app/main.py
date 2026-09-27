@@ -38,13 +38,14 @@ def pipeline_report(id: str, db: DBSession = Depends(get_db), user: User = Depen
     from .codex_adapter import to_report
     try: validated_id=UUID(id)
     except ValueError: raise HTTPException(422,'工作流编号无效')
-    job_or_404(db,validated_id)
+    job=job_or_404(db,validated_id)
     store=PipelineStore(directory(validated_id));state=store.read()
     stage=state['stages']['wu_evaluation']
     if stage['status']!='succeeded':raise HTTPException(409,'吴老师评价尚未完成，暂无可预览报告')
     path=(store.root/stage['output']).resolve()
     if not path.is_relative_to(store.root):raise HTTPException(409,'报告路径异常')
-    value=json.loads(path.read_text(encoding='utf-8'))
+    from .project_service import final_management
+    value=final_management(job)
     assessment=contract.Assessment.model_validate(value['assessment'])
     report=to_report(assessment,[assessment.outcome_resolution.canonical_name or state['inputs']['title']])
     search_record=state['stages']['search_replay']
@@ -63,7 +64,13 @@ def pipeline_report_draft(id: str,db: DBSession=Depends(get_db),user: User=Depen
     from .pipeline_api import job_or_404
     try: identifier=UUID(id)
     except ValueError:raise HTTPException(422,'工作流编号无效')
-    job_or_404(db,identifier,True)
+    job=job_or_404(db,identifier,True)
+    from .project_service import job_directory
+    from .pipeline_store import PipelineStore
+    from .evaluation_runtime import CURRENT
+    state=PipelineStore(job_directory(job.id)).read()
+    if state['inputs'].get('runtime_version')==CURRENT and state['stages']['export']['status']!='succeeded':
+        raise HTTPException(409,'管理者终稿尚未完成内部协调，请完成工作流后再转入审核')
     existing=db.scalar(select(Result).where(Result.pipeline_id==str(identifier)).with_for_update())
     response=pipeline_report(str(identifier),db,user)
     payload=response['payload']
@@ -575,7 +582,17 @@ def publish(id: str, body: RevisionInput, db: DBSession = Depends(get_db), user:
     preview=get_or_404(db,Result,id)
     if preview.pipeline_id:
         from .pipeline_api import job_or_404
-        job_or_404(db,preview.pipeline_id,True)
+        job=job_or_404(db,preview.pipeline_id,True)
+        from .project_service import final_management,job_directory
+        from .pipeline_store import PipelineStore
+        from .evaluation_runtime import CURRENT
+        state=PipelineStore(job_directory(job.id)).read()
+        if state['inputs'].get('runtime_version')==CURRENT:
+            if job.status!='succeeded' or state['stages']['export']['status']!='succeeded':
+                raise HTTPException(409,'工作流与最终协调尚未完成，不能发布初稿')
+            final=final_management(job)['assessment']
+            if preview.payload.get('level')!=final.get('current_level') or preview.payload.get('fact_ledger')!=final.get('fact_ledger'):
+                raise HTTPException(409,'草稿等级或事实与管理者终稿不同，请重新导入协调结果')
     row = locked_result(db, id, body.revision)
     Evaluation.model_validate(row.payload)
     for evidence in row.payload.get('evidence',[]):
@@ -637,3 +654,6 @@ app.router.routes[:] = [route for route in app.router.routes
 from .project_api import router as project_router
 app.include_router(project_router)
 app.router.routes[:] = [r for r in app.router.routes if not (getattr(r,'path','').startswith('/api/admin/pipelines') and 'GET' not in getattr(r,'methods',set()))]
+
+from .evaluation_review import router as review_router
+app.include_router(review_router)

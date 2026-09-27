@@ -23,10 +23,12 @@ def current_workspace(inputs,outputs,folder):
     routing_folder=folder/'evidence-routing';routing_folder.mkdir()
     routing=execute_json_stage(routing_folder,EvidenceRoutes,
         {'canonical_name':intake['canonical_name'],'outcome_card':intake['outcome_card'],
-         'project_evidence':evidence,'external_evidence':replay['evidence']},
+         'evaluation_objects':intake.get('evaluation_objects',[]),'primary_object_id':intake.get('primary_object_id'),
+         'use_records':intake.get('use_records',[]),'project_evidence':evidence,'external_evidence':replay['evidence']},
         'Only route evidence for this frozen outcome to D1-D7. Do not evaluate grades or invent facts. '
         'Use exact supplied evidence IDs. Irrelevant or missing support must yield an empty list. '
         'Project statements are not independent adoption or recognition. D6 accepts actual project, platform or organizational workflow integration; do not restrict it to Pujiang. '
+        'Route use evidence only for its exact evaluation object; a method creating a product is not product use. '
         'D1 requires original project scientific or technical facts. Explain the routing briefly. '
         'This is automated evidence routing, not human approval.',inline_input=True)
     routes=routing.model_dump(exclude={'explanation'})
@@ -38,7 +40,9 @@ def current_workspace(inputs,outputs,folder):
         'project_profile':{'project_id':scope['project_id'],'title':inputs['project_name']},
         'step3_frozen_outcomes':{'status':'frozen','source_provider':'本工单成果卡阶段',
             'outcomes':[{'outcome_id':parent_id,'title':inputs['project_name'],'child_outcomes':[
-                {'outcome_id':outcome_id,'title':intake['canonical_name'],'outcome_card':intake['outcome_card']}]}]},
+                {'outcome_id':outcome_id,'title':intake['canonical_name'],'outcome_card':intake['outcome_card'],
+                 'evaluation_objects':intake.get('evaluation_objects',[]),'primary_object_id':intake.get('primary_object_id'),
+                 'use_records':intake.get('use_records',[])}]}]},
         'milestone_context':{'review_boundary':inputs.get('search_boundary')}}
     note='本工单成果卡完成原文引用核对后，自动按当前证据ID分配维度；非人工审核。'+routing.explanation
     workspace=child_workspace(delivery,scope,replay,outputs['attribution'],child_id=outcome_id,routes=routes,review_note=note)

@@ -31,6 +31,7 @@ def _status_label(value: str) -> str:
         "isolated_effect_observed": "仅观察到描述性变化",
         "increment_not_confirmed_due_to_comparability": "可比性不足，增量未确认",
         "not_established": "尚未建立",
+        "conflicting_comparisons": "对照结果方向不一致",
     }.get(value, value)
 
 
@@ -39,7 +40,7 @@ def _comparability_label(value: str) -> str:
 
 
 def _effect_label(value: str) -> str:
-    return {"improved": "改善", "no_change": "无变化", "worsened": "变差", "descriptive": "仅描述"}.get(value, value)
+    return {"improved": "改善", "no_change": "无变化", "worsened": "变差", "descriptive": "仅描述", "threshold_met": "达到门槛", "threshold_not_met": "未达门槛", "threshold_unresolved": "达标条件待核"}.get(value, value)
 
 
 def _selection_reason_label(reason: Any) -> str:
@@ -82,7 +83,7 @@ def render_attribution_report(path: Path, result: dict[str, Any]) -> None:
         for item in result["factor_results"]
     )
     comparisons = "".join(
-        f"<tr><td>{_esc(item['name'])}</td><td>{_esc(item['baseline_value'])} {_esc(item['unit'])}</td><td>{_esc(item['observed_value'])} {_esc(item['unit'])}</td><td>{_esc(round(item['percent_change_from_baseline'], 2) if item['percent_change_from_baseline'] is not None else '')}</td><td>{_esc(_effect_label(item['effect_outcome']))}</td><td>{_esc(_comparability_label(item['comparability_status']))}</td><td>{_esc(item['isolated_factor_ids'])}</td></tr>"
+        f"<tr><td>{_esc(item['name'])}</td><td>{_esc(item['baseline_value'])} {_esc(item.get('baseline_unit',item['unit']))}</td><td>{_esc(item['observed_value'])} {_esc(item.get('observed_unit',item['unit']))}</td><td>{_esc(round(item['percent_change_from_baseline'], 2) if item['percent_change_from_baseline'] is not None else '')}</td><td>{_esc(_effect_label(item['effect_outcome']))}<br>{_esc(item.get('calculation_boundary',''))}</td><td>{_esc(_comparability_label(item['comparability_status']))}</td><td>{_esc(item['isolated_factor_ids'])}</td></tr>"
         for item in result["comparison_results"]
     )
     body = f"<div class='panel'><b>{_esc(result['project']['name'])}</b><p>{_esc(result['target']['name'])}</p><p>{_esc(result['summary'])}</p></div><h2>因素级归因</h2><table><thead><tr><th>因素</th><th>类型</th><th>作用</th><th>状态</th><th>判断</th><th>证据</th></tr></thead><tbody>{rows}</tbody></table><h2>比较结果</h2><table><thead><tr><th>比较</th><th>基线</th><th>观察值</th><th>相对变化(%)</th><th>结果方向</th><th>可比性</th><th>被单独考察因素</th></tr></thead><tbody>{comparisons}</tbody></table><div class='boundary'>{_esc(result['boundary'])}</div>"

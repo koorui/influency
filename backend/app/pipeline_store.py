@@ -15,7 +15,14 @@ def timestamp():return datetime.now(timezone.utc).isoformat()
 def atomic_json(path,value):
     temp=path.with_suffix('.tmp')
     temp.write_text(json.dumps(value,ensure_ascii=False,indent=2),encoding='utf-8')
-    os.replace(temp,path)
+    for attempt in range(5):
+        try:
+            os.replace(temp,path)
+            return
+        except PermissionError:
+            if os.name!='nt' or attempt==4:raise
+            import time
+            time.sleep(0.05*(attempt+1))
 
 
 class WaitingForInput(Exception):
@@ -29,6 +36,8 @@ class PipelineStore:
         self.path=self.root/'pipeline.json'
 
     def create(self,inputs):
+        from .evaluation_runtime import CURRENT
+        inputs={**inputs,'runtime_version':CURRENT}
         self.root.mkdir(parents=True,exist_ok=False)
         state={'schema_version':'impact-pipeline.v1','created_at':timestamp(),'status':'pending',
                'inputs':inputs,'stages':{s:{'status':'pending','attempts':0} for s in STAGES}}
@@ -75,6 +84,8 @@ class PipelineStore:
                     value=json.loads(output_path.read_text(encoding='utf-8'))
                     outputs[name]=value;continue
                 if name not in executors:raise ValueError(f'Missing stage executor: {name}')
+                if stage['status'] in ('failed','waiting','running'):
+                    state.setdefault('stage_history',[]).append({'stage':name,**stage})
                 stage['attempts']+=1
                 folder=self.root/name/f"attempt-{stage['attempts']}"
                 folder.mkdir(parents=True,exist_ok=False)

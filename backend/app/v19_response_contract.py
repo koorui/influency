@@ -1,6 +1,6 @@
 """Typed transport of the original v19 dimension JSON (no grading-rule changes)."""
 from typing import Literal
-from pydantic import Field
+from pydantic import Field, model_validator
 from .schema import StrictModel
 
 class EmptyAnalysis(StrictModel):
@@ -77,10 +77,17 @@ class AIAnalysis(StrictModel):
     source_ids: list[str]
 
 class Grade(StrictModel):
-    level: Literal['G1','G2','G3','G4','G5']
+    level: Literal['G1','G2','G3','G4','G5'] | None
+    assessment_state: Literal['assessed','insufficient_evidence','not_applicable','conflict']
     reason: str
     source_ids: list[str]
     gap_to_next: str
+
+    @model_validator(mode='after')
+    def state_grade(self):
+        if (self.assessment_state=='assessed') != (self.level is not None):raise ValueError('缺证、不适用或冲突不能填G')
+        if self.level and not self.source_ids:raise ValueError('包括G1在内的等级须有事实依据')
+        return self
 
 class DimensionReply(StrictModel):
     status: Literal['明确成立','部分成立','尚未形成','本轮未体现','不适用']
@@ -103,11 +110,31 @@ class DimensionReply(StrictModel):
     ai_analysis: AIAnalysis | EmptyAnalysis
     grade: Grade
 
+class ImpactUse(StrictModel):
+    object_id: str = Field(min_length=1)
+    user: str = Field(min_length=1)
+    task: str = Field(min_length=1)
+    result: str = Field(min_length=1)
+    relationship: Literal['internal','collaborator','independent','unknown']
+    relationship_basis: str
+    source_ids: list[str] = Field(min_length=1)
+    independence_source_ids: list[str]
+
+
 class ImpactLevel(StrictModel):
-    level: Literal['L1','L2','L3','L4','L5','L6']
+    level: Literal['L1','L2','L3','L4','L5','L6'] | None
     reason: str
     source_ids: list[str]
     gap_to_next: str
+    use_evidence: list[ImpactUse] = Field(default_factory=list)
+
+    @model_validator(mode='after')
+    def usage_basis(self):
+        if self.level and self.level!='L1' and not self.use_evidence:
+            raise ValueError('L2及以上须有具体对象的真实使用依据')
+        if self.level in ('L3','L4','L5','L6') and not any(u.relationship=='independent' and u.relationship_basis.strip() and u.independence_source_ids for u in self.use_evidence):
+            raise ValueError('L3及以上须有独立采用及关系依据')
+        return self
 
 class ScopeLevel(ImpactLevel):
     scope: str

@@ -50,7 +50,7 @@ D_DIMENSION_SYSTEM_PROMPT = """你是重大科研项目创新影响力评价专�
 先逐个判断本维度的三个原子分支，再依照本维度输入契约和综合规则形成维度状态。项目方声明与外部事实必须分开；检索事实只能标为支持、限制或反驳，不能直接充当D结论。材料缺失或公开检索未发现只能写“本轮未体现”，不能写成事实不存在。
 严格执行输入中的 agent_execution_protocol 和本维度三组 upstream_component_contract：先按 input_path 找到材料，再逐项核对 package_id、target_branches、required_fields 和 prohibited_use，然后严格依照 agent_use_steps 的顺序执行。每一步只能更新其 writes_to 指定的 JSON 字段；先写原子分支、证据链、支持/反证和缺口，最后才综合维度状态。内部Search组件用于还原项目内部事实与声明，AI贡献组件只用于规定的归因或对象消歧，外部Search组件用于外部核验。某组在本维度标为非主要或无必需组件时，不得强行从该组材料推断结论；不得跨组替代缺失组件。缺少必需字段时，相应原子判断必须保留证据缺口并按规则降为本轮未体现或部分成立。
 D1的核心问题对应只能读取Step 3显式问题链接；若只收到核心问题清单但没有成果—问题映射，D1.1必须本轮未体现，禁止模型按关键词自行匹配。
-D1判断核心问题推进、能力增量和横向先进性；D2判断项目期新增、新增性质和可归因性；D3判断独立学术行为深度；D4判断开放、可用和真实复用；D5分别判断内部真实使用、外部独立使用及效果持续性；D6只判断项目或组织主线接入、调用和持续运行；D7只接受独立专业主体的评价、认可或采纳。项目内部课题协同不得计入D6，专利、项目方宣传和同源转载不得计入D7。
+D1判断核心问题推进、能力增量和横向先进性；D2判断项目期新增、新增性质和可归因性；D3判断独立学术行为深度；D4判断开放、可用和真实复用；D5分别判断内部真实使用、外部独立使用及效果持续性；D6逐档判断内部流程接入、多环节或外部流程协同和持续运行；D7只接受独立专业主体的评价、认可或采纳。项目内部真实协同可按具体对象支持D6，不能把研制流程作用转记给产物，专利、项目方宣传和同源转载不得计入D7。
 AI归因贯穿D1、D2和D5的相应事实链，必须区分AI、数据、算力、自动化、设备、领域知识、传统方法和人工的作用，但不得作为等权独立分数。L2-L4只作为专业事实，不得读取其历史等级、另行评分或按数量赋权。
 区分当前节点之前的基础、当前评价窗口内的新增和当前节点之后的影响；后续影响不得反证项目期当时领先。
 不打分、不计算平均值、不输出成果G级。状态只允许“明确成立、部分成立、尚未形成、本轮未体现、不适用”；不适用必须有明确范围依据。
@@ -95,7 +95,7 @@ OUTCOME_SYNTHESIS_SYSTEM_PROMPT = """你是重大科研项目成果综合分析�
 
 PROJECT_SYNTHESIS_SYSTEM_PROMPT = """你是重大科研项目创新影响力综合分析专家。输入是Step 3冻结成果的D1-D7判断及成果观点。
 特定层只归纳D1、D2以及D5中的项目内部真实使用和效果，回答项目自己的核心问题解决得怎样；全局层只归纳D3、D4、D6、D7以及D5中的外部独立真实使用，回答成果是否走出去形成更广泛价值。两层不是新指标，不重新打分。
-项目系统性/课题协同单独判断，不并入任何D维度，也不能替代外部扩散和真实影响。不得输出项目总分、平均分、G级或另一套维度。
+项目系统性/课题协同单独汇总；适用于具体成果D6的事实可引用但不得重复计数，不能替代外部扩散。不得输出项目总分、平均分、G级或另一套维度。
 项目级每个D都必须输出覆盖度、深度和集中度：覆盖度说明多少冻结主要成果得到有效证据；深度说明最强行为达到哪里；集中度说明证据是否过度集中在单一成果。不得平均，也不得让一个强成果代表全项目。
 层级状态只允许“强、较强、初步形成、尚未形成、本轮未体现”。
 只输出JSON对象：
@@ -122,8 +122,8 @@ D_DIMENSION_SYSTEM_PROMPT += """
 OUTCOME_SYNTHESIS_SYSTEM_PROMPT += OUTCOME_OUTPUT_REQUIREMENTS
 PROJECT_SYNTHESIS_SYSTEM_PROMPT += PROJECT_OUTPUT_REQUIREMENTS
 D_DIMENSION_SYSTEM_PROMPT += """
-【当前分级口径】本维度另给G1-G5成熟度。依据已核实且适用于本成果的事实，给出能够支撑的最高当前等级；尚待补充的分支、下一等级所需材料分别写入missing_inputs和gap_to_next，不因这些缺口清空已有证据支持的当前等级。本轮证据未建立更高成熟度时给G1保守基档，说明材料范围，不把缺证写成现实中的不存在。等级须依据本维度grade_criteria、可追溯事实和反证独立说明，不由定性状态机械换算。分级示例仍受本维度现行证据边界约束：D6只以项目主线接入、调用和持续运行评定；D7不能仅凭专利、项目方宣传或同源转载升级。
-在JSON中增加"grade":{"level":"G1|G2|G3|G4|G5","reason":"当前等级的关键事实与边界","source_ids":["本轮输入的来源编号"],"gap_to_next":"进入下一级还缺什么"}。
+【当前分级口径】本维度另给G1-G5成熟度。依据已核实且适用于本成果的事实，给出能够支撑的最高当前等级；尚待补充的分支、下一等级所需材料分别写入missing_inputs和gap_to_next，不因这些缺口清空已有证据支持的当前等级。缺证、不适用或冲突时grade.level=null，assessment_state分别为insufficient_evidence/not_applicable/conflict；有事实可分档时为assessed，G1也须原始依据。等级须依据本维度grade_criteria、可追溯事实和反证独立说明，不由定性状态机械换算。分级示例仍受本维度现行证据边界约束：D6只以项目主线接入、调用和持续运行评定；D7不能仅凭专利、项目方宣传或同源转载升级。
+在JSON中增加"grade":{"assessment_state":"assessed|insufficient_evidence|not_applicable|conflict","level":"G1|G2|G3|G4|G5 或 null","reason":"当前等级的关键事实与边界","source_ids":["本轮输入的来源编号"],"gap_to_next":"进入下一级还缺什么"}。
 """
 OUTCOME_SYNTHESIS_SYSTEM_PROMPT += """
 【成果整体影响分级】依照当前impact_level_criteria从成果形成与验证开始判断L1-L6，不平均七维G级；证据有限时选有依据的较低等级，具体边界另列。
@@ -135,7 +135,7 @@ PROJECT_SYNTHESIS_SYSTEM_PROMPT += """
 """
 
 
-from .grading_standard import FINAL_JUDGMENT_POLICY, VERSION as GRADING_VERSION, apply_current_dimension_scope
+from .grading_standard import FINAL_JUDGMENT_POLICY, VERSION as GRADING_VERSION, RUBRIC_VERSION, apply_current_dimension_scope
 D_DIMENSION_SYSTEM_PROMPT += FINAL_JUDGMENT_POLICY
 OUTCOME_SYNTHESIS_SYSTEM_PROMPT += FINAL_JUDGMENT_POLICY
 PROJECT_SYNTHESIS_SYSTEM_PROMPT += FINAL_JUDGMENT_POLICY
@@ -336,7 +336,7 @@ def build_indicator_product(
             ),
         },
         "grading_compatibility": {
-            "status": "graded_contract" if (current_run.get("run") or {}).get("output_contract_version") == "structured-dimension-facts-with-grades.v3" else "legacy_ungraded",
+            "status": "graded_contract" if (current_run.get("run") or {}).get("output_contract_version") == "structured-dimension-facts-with-grades.v4" else "legacy_ungraded",
             "source": "2026-09-17 七维分级与六级影响力对应建议",
             "note": "旧批次不从定性状态推算等级；未执行分级判断时显示未评定。",
         },
@@ -500,6 +500,11 @@ class IndicatorEvaluationPipeline:
             partial_outcomes.append({
                 "outcome_id": card.get("outcome_id"),
                 "title": card.get("title"),
+                "primary_object_id": (card.get('source_card') or {}).get('primary_object_id'),
+                "evaluation_objects": copy.deepcopy((card.get('source_card') or {}).get('evaluation_objects') or []),
+                "use_records": copy.deepcopy((card.get('source_card') or {}).get('use_records') or []),
+                "shared_fact_ledger": copy.deepcopy(workspace.get("shared_fact_ledger")),
+                "shared_fact_evidence": copy.deepcopy(workspace.get("shared_fact_evidence")),
                 "child_outcomes": copy.deepcopy(card.get("child_outcomes") or []),
                 "problem_ids": copy.deepcopy(card.get("problem_ids") or []),
                 "dimensions": dimensions,
@@ -554,7 +559,7 @@ class IndicatorEvaluationPipeline:
                 "standard_version": EVALUATION_STANDARD_VERSION,
                 "rubric_version": RUBRIC_VERSION,
                 "grading_standard": GRADING_VERSION,
-                "output_contract_version": "structured-dimension-facts-with-grades.v3",
+                "output_contract_version": "structured-dimension-facts-with-grades.v4",
             },
             "input_contract": contract,
             "milestone_context": copy.deepcopy(workspace.get("milestone_context") or {}),
@@ -630,6 +635,9 @@ class IndicatorEvaluationPipeline:
         if not result.ok or not isinstance(result.data, dict):
             return _failed_d_outcome_synthesis(result.error or "模型未返回可解析JSON。")
         synthesis = _normalize_d_outcome_synthesis(result.data)
+        primary=outcome.get('primary_object_id')
+        if primary and any(u.get('object_id')!=primary for u in synthesis.get('impact_level',{}).get('use_evidence',[])):
+            return _failed_d_outcome_synthesis('等级依据引用了关联成果的使用，未对应主评价对象。')
         _validate_synthesis_sources(synthesis, outcome.get("dimensions") or [])
         child_ids = {str(row.get("outcome_id")) for row in outcome.get("child_outcomes") or []}
         unknown = set(synthesis["evaluated_child_ids"]) - child_ids
@@ -685,7 +693,7 @@ class IndicatorEvaluationPipeline:
         synthesis = _normalize_d_project_synthesis(project_data)
         synthesis["scope_impact_level"]["scope"] = str((workspace.get("project_profile") or {}).get("evaluation_scope") or "")
         scope_level = synthesis["scope_impact_level"]
-        if str(scope_level.get("level") or "").startswith("L") and not set(scope_level.get("source_ids") or []) <= _source_identifiers(outcomes):
+        if str(scope_level.get("level") or "").startswith("L") and not _source_identifiers(scope_level) <= _source_identifiers(outcomes):
             scope_level["level"] = "待确认"
             scope_level["reason"] = "整体等级所引来源未在本轮成果中闭合。"
         valid_ids = {str(row.get("outcome_id")) for row in outcomes}
@@ -711,7 +719,7 @@ def _validate_synthesis_sources(synthesis, dimensions):
     }) for row in dimensions}
     level = synthesis.get("impact_level") or {}
     available_sources = set().union(*sources_by_dimension.values()) if sources_by_dimension else set()
-    if str(level.get("level") or "").startswith("L") and not set(level.get("source_ids") or []) <= available_sources:
+    if str(level.get("level") or "").startswith("L") and not _source_identifiers(level) <= available_sources:
         level["level"] = "待确认"
         level["reason"] = "成果等级所引来源未在本轮维度判断中闭合。"
     accepted = []
@@ -768,7 +776,7 @@ def _source_identifiers(value: Any) -> set[str]:
         for key, item in value.items():
             if key in {"source_id", "evidence_id", "claim_id", "contribution_id", "component_id"} and isinstance(item, str):
                 ids.add(item)
-            elif key in {"source_ids", "source_record_ids", "core_evidence_ids", "decisive_source_ids"}:
+            elif key in {"source_ids", "source_record_ids", "core_evidence_ids", "decisive_source_ids", "independence_source_ids"}:
                 ids.update(text_list(item))
             elif isinstance(item, (dict, list)):
                 ids.update(_source_identifiers(item))
@@ -885,14 +893,31 @@ def _confidence(value: Any, fallback: str = "低") -> str:
 
 def _normalize_level(value: Any, prefix: str, *, require_sources: bool = False) -> dict[str, Any]:
     row = value if isinstance(value, dict) else {}
+    state=row.get('assessment_state')
+    if prefix=='G' and state in ('insufficient_evidence','not_applicable','conflict'):
+        if row.get('level') is not None:raise ValueError('未评定维度不得填G')
+        return {'level':None,'assessment_state':state,'reason':str(row.get('reason') or ''),
+                'source_ids':text_list(row.get('source_ids')),'gap_to_next':str(row.get('gap_to_next') or '')}
+    if prefix=='L' and row.get('level') is None and str(row.get('reason') or '').strip():
+        return {'level':None,'reason':row['reason'],'source_ids':text_list(row.get('source_ids')),
+                'gap_to_next':str(row.get('gap_to_next') or ''),'use_evidence':row.get('use_evidence') or []}
     allowed = {f"{prefix}{i}" for i in range(1, 6 if prefix == "G" else 7)}
     level = str(row.get("level") or "待确认")
     reason = str(row.get("reason") or "").strip()
     source_ids = text_list(row.get("source_ids"))
-    if level not in allowed or not reason or (require_sources and not source_ids and level != "G1"):
+    if level not in allowed or not reason or (require_sources and not source_ids):
         level = "待确认"
         reason = reason or "缺少可追溯的等级依据。"
-    return {"level": level, "reason": reason, "gap_to_next": str(row.get("gap_to_next") or ""), "source_ids": source_ids}
+    normalized={"level": level, "reason": reason, "gap_to_next": str(row.get("gap_to_next") or ""), "source_ids": source_ids}
+    if prefix=='G':normalized['assessment_state']='assessed' if level in allowed else 'not_assessed'
+    if prefix=='L':
+        uses=row.get('use_evidence') or []
+        valid=isinstance(uses,list) and all(isinstance(u,dict) and all(str(u.get(k) or '').strip() for k in ('object_id','user','task','result')) and u.get('source_ids') for u in uses)
+        independent=valid and any(u.get('relationship')=='independent' and str(u.get('relationship_basis') or '').strip() and u.get('independence_source_ids') for u in uses)
+        if level in ('L2','L3','L4','L5','L6') and (not valid or not uses or (level!='L2' and not independent)):
+            normalized.update(level='待确认',reason='真实使用或独立性依据未闭合，不能交付该等级。')
+        normalized['use_evidence']=copy.deepcopy(uses) if valid else []
+    return normalized
 
 def _fact_rows(value: Any) -> list[dict[str, str]]:
     rows = []

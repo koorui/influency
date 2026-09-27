@@ -6,8 +6,15 @@ from app.pipeline_store import WaitingForInput
 
 
 def context():
-    source=Path(__file__).resolve().parents[3]/'9.23/双层影响力工具_v19_交付包_20260923_0735/系统运行版/backend/workspace_snapshots/P02.json'
-    workspace=json.loads(source.read_text(encoding='utf-8'))
+    from app.v19_child_scope import child_workspace
+    children=[{'outcome_id':f'OUT-{i}','title':f'成果{i}'} for i in range(5)]
+    delivery={'project_profile':{'project_id':'P02','title':'测试项目'},
+        'step3_frozen_outcomes':{'outcomes':[{'outcome_id':'PARENT','child_outcomes':children}]}}
+    scope={'project_id':'P02','outcome_id':'OUT-0','attribution_preparation':{
+        'evidence':[{'id':'E1','text':'已完成原始测试','locator':'第1页'}]}}
+    workspace=child_workspace(delivery,scope,{'project_id':'P02','outcome_id':'OUT-0','evidence':[]},
+        {'contribution_result':{},'unresolved_items':[]},child_id='OUT-0',routes={'D1':['E1']},review_note='测试原始事实映射')
+    workspace['evaluation_framework']['outcome_cards'].extend(children[1:])
     oid=workspace['evaluation_framework']['outcome_cards'][0]['outcome_id']
     inputs={'v19_workspace':workspace,'v19_scope_mapping':{'outcome_id':oid,'canonical_name':'已确认具体成果','reviewed':True}}
     outputs={'wu_intake':{'project_id':'P02','outcome_id':oid,'intake':{'canonical_name':'已确认具体成果'},'attribution_preparation':{'evidence':[{'id':'PIPE-P1','text':'项目原文','locator':'第1页'}]}},
@@ -41,10 +48,20 @@ def test_bridge_requires_reviewed_mapping():
 
 
 def test_export_stores_two_independent_rubrics(tmp_path):
-    wu={'project_id':'P02','outcome_id':'X','rubric_id':'wu-v2-six-levels','assessment':{'current_level':3}}
-    v19={'project_id':'P02','outcome_id':'X','rubric_id':'outcome-d1-d7-evaluation.v19','result':{'impact_level':'L2'}}
+    wu={'project_id':'P02','outcome_id':'X','rubric_id':'wu-v2-six-levels','assessment':{'current_level':3,
+        'dimensions':[{'id':f'D{i}','grade':'G1'} for i in range(1,8)]}}
+    v19={'project_id':'P02','outcome_id':'X','rubric_id':'outcome-d1-d7-evaluation.v19','result':{
+        'outcomes':[{'outcome_id':'X','dimensions':[{'dimension_id':f'D{i}','grade':{'level':'G1'}} for i in range(1,8)],
+            'synthesis':{'impact_level':{'level':'L2'}}}]}}
     result=export_stage({}, {'wu_evaluation':wu,'v19_evaluation':v19},tmp_path)
     assert result['wu']['file']!=result['v19']['file']
     assert json.loads((tmp_path/result['wu']['file']).read_text(encoding='utf-8'))==wu
     assert json.loads((tmp_path/result['v19']['file']).read_text(encoding='utf-8'))==v19
     assert not result['published']
+
+
+def test_export_rejects_unmapped_or_incomplete_grades(tmp_path):
+    wu={'project_id':'P02','outcome_id':'X','rubric_id':'wu-v2-six-levels','assessment':{'current_level':3}}
+    v19={'project_id':'P02','outcome_id':'X','rubric_id':'outcome-d1-d7-evaluation.v19','result':{'impact_level':'L2'}}
+    with pytest.raises(ValueError,match='不完整'):export_stage({}, {'wu_evaluation':wu,'v19_evaluation':v19},tmp_path)
+    assert not (tmp_path/'manifest.json').exists()

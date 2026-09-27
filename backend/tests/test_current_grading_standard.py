@@ -20,18 +20,18 @@ def test_both_evaluators_use_document_ladder_and_require_actual_grades():
     assert '独立外部' in a['levels']['L3']['meaning']
     for model in (Grade,ImpactLevel):
         with pytest.raises(ValueError):model(level='待确认',reason='证据少',source_ids=[],gap_to_next='补证')
-    assert _normalize_level({'level':'G1','reason':'本轮材料未显示独立采用','source_ids':[]},'G',require_sources=True)['level']=='G1'
+    assert _normalize_level({'level':'G1','reason':'本轮材料未显示独立采用','source_ids':[]},'G',require_sources=True)['level']=='待确认'
 
 
 def test_final_report_keeps_grade_with_limited_evidence_but_blocks_false_upgrade():
     value=fixture_assessment()
     for d in value['dimensions']:d['grade']='G1';d['gaps']=['本轮材料没有建立更高成熟度']
-    assessment=contract.FinalAssessment.model_validate(value)
+    assessment=contract.LegacyFinalAssessment.model_validate(value)
     contract.validate_completed_assessment(assessment)
     value['dimensions'][2]['grade']='G3'
-    with pytest.raises(ValueError):contract.FinalAssessment.model_validate(value)
+    with pytest.raises(ValueError):contract.LegacyFinalAssessment.model_validate(value)
     value['dimensions'][2]['grade']='G1';value['evaluation_status']='preliminary'
-    with pytest.raises(ValueError):contract.FinalAssessment.model_validate(value)
+    with pytest.raises(ValueError):contract.LegacyFinalAssessment.model_validate(value)
 
 
 def test_material_context_keeps_dated_original_lines_and_citation():

@@ -197,9 +197,28 @@ def report(id:UUID,db:Session=Depends(get_db),user:User=Depends(current_user)):
     if not r:raise HTTPException(404,'报告不存在或当前账号无权查看')
     job=db.get(PipelineJob,r.pipeline_id) if r.pipeline_id else None
     if not job or job.status!='succeeded':raise HTTPException(409,'工作流尚未完成')
-    return {'id':r.id,'title':job.title,'project_name':db.get(Project,r.project_id).name,
-        'payload':r.payload,'v19':stage_output(job,'v19_evaluation')['result'],'published_at':r.published_at,
-        **report_acceptance(db,job,user)}
+    from .evaluation_review import review_state
+    review=review_state(db,r)
+    payload={**r.payload,'adjudication_status':review['adjudication_status']}
+    from .report_context import with_source_context
+    payload=with_source_context(payload,job)
+    unified=report_comparison(job)
+    return {'id':r.id,'revision':r.revision,'project_id':r.project_id,'title':job.title,'project_name':db.get(Project,r.project_id).name,
+        'payload':payload,'v19':stage_output(job,'v19_evaluation')['result'],'published_at':r.published_at,
+        'unified':unified,**report_acceptance(db,job,user)}
+
+
+def report_comparison(job):
+    if job is None:return None
+    from .unified_evaluation import combine_evaluations
+    from .project_service import final_management
+    management=final_management(job);dimensions=stage_output(job,'v19_evaluation')
+    if not all(v.get('project_id') and v.get('outcome_id') for v in (management,dimensions)):
+        return None  # Legacy identity metadata is absent; do not invent a mapping.
+    result=combine_evaluations(management,dimensions)
+    state=PipelineStore(job_directory(job.id)).read()
+    result['coordination']=(stage_output(job,'export').get('coordination') if state['stages']['export']['status']=='succeeded' else None) or {'status':'not_run','authority':'management'}
+    return {k:v for k,v in result.items() if k not in ('management_layer','dimension_layer')}
 
 
 def report_acceptance(db,job,user):
@@ -236,6 +255,10 @@ def request_detail(id:UUID,db:Session=Depends(get_db),user:User=Depends(admin)):
         data['outputs']={}
         for name in ('wu_intake','search_replay','attribution','wu_evaluation','v19_evaluation'):
             if data['workflow']['stages'][name]['status']=='succeeded':data['outputs'][name]=stage_output(job,name)
+        if all(name in data['outputs'] for name in ('wu_evaluation','v19_evaluation')):
+            from .project_service import final_management
+            data['outputs']['wu_evaluation']=final_management(job)
+            data['unified']=report_comparison(job)
     return data
 
 

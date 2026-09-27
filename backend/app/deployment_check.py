@@ -16,7 +16,7 @@ def main():
     assert (home / 'config.toml').is_file(), 'Relay config missing'
     assert json.loads((home / 'auth.json').read_text()).get('OPENAI_API_KEY'), 'Relay authentication missing'
     assert (SKILL_ROOT / 'SKILL.md').is_file(), 'Evaluation skill missing'
-    assert (SKILLS / 'dual-layer-impact-v19/scripts/v19.py').is_file(), 'v19 runtime missing'
+    assert (SKILL_ROOT / 'scripts/v19.py').is_file(), 'v19 runtime missing'
     subprocess.run([settings().codex_binary, '--version'], check=True)
     with Session() as db:
         count = db.scalar(select(func.count()).select_from(User))

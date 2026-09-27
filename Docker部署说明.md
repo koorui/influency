@@ -1,5 +1,7 @@
 # 知衡impact Docker 部署
 
+> 2026-09-27：当前 v5 使用已有依赖镜像与显式源码／静态文件挂载，本机入口为 start-docker.ps1。老师试用与新服务器部署以 [当前部署说明](docs/teacher-trial-deployment.md) 为准。以下保留早期部署及迁移过程，旧构建命令和历史数量不代表当前发布状态。
+
 该部署使用 Nginx 前端、FastAPI 后端、MySQL 8、完整工作流 worker。Codex CLI 0.156.1、Python 依赖和评测 Skill 均封装进后端镜像。API、数据库、迁移和任务进程按就绪状态顺序启动。默认入口为 http://localhost:18080 ，数据库没有映射宿主机端口。
 
 ## 本机启动
