@@ -52,6 +52,34 @@ class PreparedClaim(StrictModel):
     evidence_ids: list[str]
 
 
+class AttributionMeasurement(Measurement):
+    """DCA v1 permits omitted display labels and units."""
+    model_config = {'extra': 'allow'}
+    label: str = ''
+    unit: str = ''
+
+
+class AttributionComparison(Comparison):
+    """Validate handoffs without imposing the model-generation schema on DCA v1."""
+    model_config = {'extra': 'allow'}
+    baseline: AttributionMeasurement
+    observed: AttributionMeasurement
+    notes: str = ''
+
+    @model_validator(mode='after')
+    def attribution_boundary(self):
+        # Missing units stay unknown, as in the DCA engine; never invent a unit.
+        if not self.evidence_ids:
+            raise ValueError('比较必须引用基线与观测值的原文依据')
+        if not set(self.isolated_factor_ids).issubset(self.involved_factor_ids):
+            raise ValueError('隔离因素必须属于本次比较因素')
+        if len(set(self.isolated_factor_ids))>1:
+            raise ValueError('一个对照不能同时证明多个因素各自的独立贡献')
+        if self.baseline.unit.strip() and self.observed.unit.strip() and self.baseline.unit.strip()!=self.observed.unit.strip():
+            raise ValueError('比较两侧单位不一致，请核实换算依据')
+        return self
+
+
 class IntakeEvidence(StrictModel):
     id: str
     material_id: str
@@ -161,7 +189,7 @@ def attribution_input(preparation: AttributionPreparation,replay: SearchReplay):
         raise ValueError('Search回放与当前归因对象不一致')
     # Validate this boundary for direct/replayed inputs as well as model intake.
     for value in preparation.comparisons:
-        Comparison.model_validate(value)
+        AttributionComparison.model_validate(value)
     evidence=[*preparation.evidence,*replay.evidence]
     ids=[e.id for e in evidence]
     if len(set(ids))!=len(ids):raise ValueError('项目与Search证据ID冲突，不能覆盖')
